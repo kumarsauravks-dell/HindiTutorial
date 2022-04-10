@@ -1,0 +1,162 @@
+- To Start MongoDb from command prompt
+    - mongo + Enter
+- To exit from MongoDb
+    - exit + Enter
+- To clear the screen
+    - ctrl + L
+---------------------------------------------
+Useful Commands
+    - show dbs -> To show list of databases(admin config local {default databases})
+    - use ecom -> To create new database named ecom, if already exist then we will enter into it by using use.
+    - show collections -> to see the collections(table) inside a database
+    - db.createCollection('products') -> To create a collection named products
+    - db.products.drop() -> To delete a collection named products
+    - db.dropDatabase() -> To delete the current database
+    - db.products.find() -> To show the data inside products collection.
+    Note -> Agar collection ka name galat diye to bhi koi error nhi return hoga. Matlab agar collection me koi data nhi to bhi, aur gatat collection name denge to bhi -> nothing get return
+    - db.products.insertOne({name:'Keyboard',price:250}) -> to create a document insde a collection products
+    - db.products.find({price:250}) -> To find specific product having price 250
+    - db.products.findOne({price:255}) -> returns one single product with price 255 , if not exist will return null.
+    - db.products.insertMany([{name:"Mouse",price:20},{name:"Table",price:400}]) -> insert multiple documents.
+    - db.products.find().pretty() -> To show data in formatted way.
+    - db.products.update({_id:ObjectId("624c8479197e2a195c52b320")},{$set:{name:'TV'}}) -> To update a product of a particular id.
+    - db.products.deleteOne({_id:ObjectId("624c872d197e2a195c52b322")}) -> To delete a document of a particular id.
+    - db.products.deleteMany({_id:{$in:[ObjectId("624c872d197e2a195c52b321"),ObjectId("624c8479197e2a195c52b320")]}}) -> delete many products of particular id.
+
+Relational database -> We generally avoid creating it in MongoDb but we can.
+    We can do :
+        - db.createCollection('reviews')
+        - db.reviews.insertMany([{text:"This is a very good product",stars:4,productId:ObjectId("624c83a3197e2a195c52b31f")},{text:"Not upto the mark",stars:2,productId:ObjectId("624c83a3197e2a195c52b31f")}])
+    We should do :
+        - db.products.update({_id:ObjectId("624c83a3197e2a195c52b31f")},{$set:{reviews:[{text:"This is a very good product",stars:4},{text:"Not Upto the mark",stars:2}]}})
+    
+Schema k mamle me mongodb pa flexible hai. -> document k fields common hona jaruri nhi hai.
+
+Operators
+    - eq operator
+        - db.products.find({name:{$eq:'Pen'}}) 
+        - name could not be Name because it is case sensitive.
+    - gt operator
+        - db.products.find({price:{$gt:6}})
+    - lte operator
+        - db.products.find({price:{$lte:10}})
+    - and operator
+        - db.products.find({$and:[{price:{$eq:5}},{name:{$eq:'Usb'}}]})
+-----------------------------------------------------------
+Indexes
+    - Dictionary me jo index hoti hai usi k jaisa concept use hua hai yha.
+    - Example to show index
+        - for( let i=1;i<5000;i++){db.products.insertOne({name:'product'+i,price:i})}
+        - db.products.find({name:'product2000'})
+        - db.products.find({name:'product2000'}).explain('executionStats')
+            - Here we observe "executionTimeMillis" : 30,"totalDocsExamined" : 5002
+        - Agar hum ab name field me index laga de to ye 50002 document scan nhi hongi ,index internally apni search krega aur bas name field se search k k data hume dega.
+        - db.products.createIndex({name:1})
+        - db.products.find({name:'product2000'}).explain('executionStats')
+            - "executionTimeMillis" : 0,"totalKeysExamined" : 1,"totalDocsExamined" : 1,
+        - Demerit of Indexes - Read fast hota hai but write slow ho jata hai because har document add k sath uska index bhi update hoga. Isliye kam se kam fields me index lgana hai jise hum jada search krte hain.
+        - To check index of a document
+            - db.products.getIndexes()
+            - We got two object for id and name - because id me by default mongo ne add ki, tbhi id se search krna itna fast hota hai.
+        - To delete in index
+            - db.products.dropIndex('name_1')
+----------------------------------------------------------------
+Enable Access Control / Db Auth Enable
+    - set user id and password to access dbs - show dbs will then takes a username and password
+        - use admin
+        - db.createUser({user:'superAdmin',pwd: passwordPrompt(),roles:[{role:"userAdminAnyDatabase",db:"admin"},"readWriteAnyDatabase"]})
+        - Open mongod.cfg file and Uncomment security and add
+            - security: authorization: enabled
+        - Restart the mongodb services from services.msc
+        - To login as admin , now we have to follow this command
+            - mongo --authenticationDatabase "admin" -u "superAdmin" -p secret
+        - To create a new user to access only the ecom database
+            - Login as admin
+            - use ecom
+            - db.createUser({user:'ecomUser',pwd: passwordPrompt(),roles:[{role:'readWrite',db:'ecom'},{role:'read',db:'schooldb'}]})
+            - exit
+            - mongo --authenticationDatabase "admin" -u "ecomUser"
+        - To check login and db info
+            - db.runCommand({connectionStatus:1})
+-----------------------------------------------------------
+MongoDb database integration 
+- Goto expressjs.com 
+    - Simply search express docs
+    - Guide -> Database Integration -> MongoDb
+    - npm install mongodb
+    - Create a express basic project ->  server.js
+        const express=require('express')
+        const app=express();
+        //Db Setup
+        const MongoClient = require('mongodb').MongoClient
+        let db;
+        MongoClient.connect('mongodb://ecomUser:secret@localhost:27017/ecom', (err, client) => {
+        if (err) throw err
+        db = client.db('ecom')  
+        })
+        app.get('/',(req,res)=>{
+            // res.send('<h1>Hello from Express App</h1>');
+            db.collection('products').find().toArray((err, result) => {
+                if (err) throw err    
+                res.send(result);
+            })
+        });
+        app.listen(4000,()=>console.log('Listening on port 4000'));
+
+    - We can also use async await -> First create a wrapper function and make it async
+        const express= require('express');
+        const app=express();
+        const MongoClient=require('mongodb').MongoClient
+        let db;
+        const connectionUrl='mongodb://ecomUser:secret@localhost:27017/ecom';
+        // Create a immediate invoke fuction
+        (async function(){
+            try{
+                const client=await MongoClient.connect(connectionUrl)
+                db=client.db('ecom')
+            }
+            catch(err){
+                throw err
+            }
+        })();
+
+        app.get('/',async (req,res)=>{
+            try{
+                const result=await db.collection('products').find().toArray()
+                res.send(result);
+            }
+            catch(err){
+                throw err
+            }
+        })
+
+        app.listen(4000,()=>console.log('Listening on port 4000'));
+
+    - Inserting Data
+        app.get('/insert',async (req,res)=>{
+            try{
+                const result=await db.collection('products').insertOne({
+                    name:'Camera',
+                    price:400
+                })
+                res.send(result);
+            }
+            catch(err){
+                throw err
+            }
+        })
+    - Finding/searching Data
+        const  ObjectId  = require('mongodb').ObjectId;
+        app.get('/find',async (req,res)=>{
+            try{
+                const result=await db.collection('products').findOne({
+                    _id: ObjectId("62526f7aae52b1b8666b4409")
+                })
+                res.send(result);
+            }
+            catch(err){
+                throw err
+            }
+        })
+                
+

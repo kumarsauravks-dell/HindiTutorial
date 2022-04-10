@@ -1,0 +1,171 @@
+color, background, font-family, font-size, text-align, margin, padding, border, border-radius, width, height, 
+line-height, background-image, box-shadow, cursor, overflow, list-style-type, opacity, display, position, z-insex,
+transform, transition, line-height, hover, focus.
+----------------------------------------------------------------
+Selector Types -> Id Selector, Class Selector, Tag Selector
+
+----------------------------------------------------------------
+margin - 2 Elements k beech ki spacing. - outside
+padding - 1 Element k contents k beech me spacing. - inside
+
+<body>
+    <div class="box box1">
+        <h1>Heading of box 1</h1>
+        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Hic eveniet deleniti necessitatibus cumque voluptatem nisi reprehenderit ratione fugit nostrum eius voluptatibus voluptate excepturi eligendi, aliquam non assumenda aperiam ipsum beatae?</p>
+    </div>
+    <div class="box box2">
+        <h1>Heading of box 2</h1>
+        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Hic eveniet deleniti necessitatibus cumque voluptatem nisi reprehenderit ratione fugit nostrum eius voluptatibus voluptate excepturi eligendi, aliquam non assumenda aperiam ipsum beatae?</p>
+    </div>
+</body>
+<style>
+    body{
+        margin: 0;
+        padding: 0;
+    }
+    .box{
+        background: #f1f1f1;
+        border: 1px solid black;
+    }
+    .box1{
+        margin: 20px;
+    }
+    .box2{
+        padding: 20px;
+    }
+</style>
+
+-----------------------------------------------------
+box-shadow:xoffset yoffset blur color 
+Eg: box-shadow: 12px 12px 6px grey;
+
+<body>
+    <div class="box">
+        <h1>Heading of box</h1>
+        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Hic eveniet deleniti necessitatibus cumque voluptatem nisi reprehenderit ratione fugit nostrum eius voluptatibus voluptate excepturi eligendi, aliquam non assumenda aperiam ipsum beatae?</p>
+    </div>
+</body>
+<style>
+    body{
+        margin: 0;
+        padding: 0;
+    }
+    .box{
+        margin: 20px;
+        padding: 20px;
+        height: 250px;
+        width: 250px;
+        background: #f1f1f1;
+        border: 1px solid black;
+        /* box-shadow: 12px 12px 6px grey; */
+        box-shadow: -12px -12px 6px grey;
+    }
+</style>
+
+---------------------------------------------------
+position:absolute - Agar hum kisi element ki position absolute kre to wo apne parent div relation me apne aap ko align kr legi
+        By default agar humbe uske kisi parent element ka position:relative nhi kiya to wo browser k relative me apne aap ko align kr legi.
+
+<body>
+    <div class="wrapper">
+        <div class="item">
+
+        </div>
+    </div>
+</body>
+<style>
+    body{
+        margin: 0;
+        padding: 0;
+    }
+    .wrapper{
+        width: 200px;
+        height: 200px;
+        background: gray;
+        /* margin: 20px; */
+        position: relative;
+    }
+    .item{
+        width: 40px;
+        height: 40px;
+        background: red;
+        position: absolute;
+        top: 80px; /*100+40+20=160 -> 160/2 = 80 */
+        right: -20px;
+    }
+</style>
+------------------------------------------------------
+transform
+Eg:-
+transform:rotate(45deg);
+transform:translateY(150px); -> Upar se niche 150px aa jayega.
+transform:translateX(150px); -> Left se right 150px aa jayega.
+transform:translateY(150px,150px); -> X aur phir Y sath me.
+
+----------------------------------------------------------
+transition
+Eg:-
+transition: background 6s ease;
+-----------------------------------------------------------
+focus - can be seen in textbox
+Eg:-
+<body>
+    <label for="txtName">Enter Name</label>
+    <br />
+    <input type="text" id="txtName" placeholder="Please Enter Name">
+</body>
+<style>
+    label{
+        font-weight: 600;
+        font-size: 20px;
+    }
+    input{
+        height: 25px;
+        outline: none;
+        font-size: 15px;
+    }
+    input:focus{
+        border: 2px solid green;
+    }
+</style>
+
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+Difference between px, em, rem 
+-em -> By default 1em means 16px. Jab hum parent container ki width ko custom font-size de de to 1rem us size ka ho jayega.
+        Relative hai apne parent k according kaam krta hai.
+-rem -> root ke font-size k according kaam krega parent k according nhi. root means html tag.
+
+Note : Agar hum height aur width bhi em aur rem me de to wo font-size ke according hi kaam krega.
+
+Eg:-
+<body>
+    <div class="container">
+        <h2>Container</h2>
+        <div class="item">
+            <h2>Item</h2>
+        </div> 
+    </div>
+</body>
+<style>
+    html{
+        font-size: 12px; 
+    }
+    body{
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;               
+    }
+    .container{
+        font-size: 25px;
+    }
+    .container h2{
+        font-size: 2rem;
+    }
+    .item{
+        font-size: 25px;
+    }
+    .item h2{
+        font-size: 2em;
+    }
+</style>

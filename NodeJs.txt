@@ -1,0 +1,380 @@
+Runtime 
+- In programming runtime system or runtime environment, primarily implements portion of an execution model.
+- Jab user ki request jati hai to ye runtime react krta hai. Javascript ka code server me run krne k liye use krte hai.
+
+- Developer of NodeJs - Ryan Dahl
+- Chrome k andar V8 engine hota hai jo Js smjhta hai . Ryan ne V8 engine ko ek c++ program ke sath embed kr diya aur bnaya NodeJs.
+- Asyn feature of NodeJs is very popular - When two user request at the same time. 1st user k wajah se 2nd ko wait nhi krna padta done sath me process hoti hai aur callback k baad dono ko proper data mil jata hai. Eg: Resturant waiter takes order of multiple customer and food is prepared in the backend.
+
+-------------------------------------
+Steps to compile a js file using terminal
+1. Create a file like index.js 
+2. Write Some code inside it -> console.log("Hello NodeJs");
+3. In console navigate to filepath and enter -> node index (.js extention can be ignored as it is bydefault considered.)
+
+--------------------------------------
+Steps to create a NodeJs application using NPM.
+1. npm init -> Enter Name like node-js-crash-course -> Version -> description like This is crash course -> keyword like nodejs,javascript -> author like Saurav <saurav@gmail.com>
+2. After completion we will get a file -> package.json
+3. Install some package -> npm install cli-color
+    - dependecies array jo package.json me hai usme ye package bhi add ho jayega. uske andar bhi dependecies hote hain aur ye tree struture ko manage krta hai npm.
+4. npm install -> if we delete node_modules folder , from the dependecies array of package.jsom it will be installed again.
+5. npm i -D nodemon -> -D because ye dev dependecies hai production me ye nhi chaiye.
+    - new array dekhne ko milega devDependencies k name se.
+-----------------------------------------------
+Module {Q1,Q2}
+- means file(js file) -> code ko encapsulate kr k rakhta hai(dabbe me band) , dusre code se clash na ho.
+- export kr skte hai. dusre module me bas import krna hoga.
+- /* Annonymous Function */
+(function(name){
+    var age=25;
+    console.log(name)
+})('Kumar')
+console.log(age);// not accessed because it is encapsulated
+
+kuch isi tarah ka concept follow hota hai module system me. -> Aur hum use kr pate hai exports,require etc.
+const wrapper=[
+    '(function (exports,require,module,__filename,__dirname){});'
+];
+----------------------------------------------
+Core Modules 
+const path=require('path');
+//dirname
+console.log("Current Folder Name : ",path.dirname(__filename));
+
+//filename
+console.log("Current File Name : ", path.basename(__filename));
+
+//extension
+console.log("Extension Name : ", path.extname(__filename));
+
+//parse
+console.log("Parse : ",path.parse(__filename));
+
+//join
+console.log("Join : ",path.join(__dirname,'order','app.js'));
+--------------------------------------------------
+FileSystem Module
+- Write File {Q5, Q6}
+const path=require('path');
+const fs=require('fs');
+
+fs.mkdir(path.join(__dirname,'/test'),(err)=>{
+    if(err){
+        console.log('Something Went Wrong',err)
+        return
+    }
+    console.log("Folder Created");
+})
+
+fs.writeFile(path.join(__dirname,'test','test.txt'),'Hello Node \n',(err)=>{
+    if(err){
+        throw err
+    }
+    fs.appendFile(path.join(__dirname,'test','test.txt'),'More Data',(err)=>{
+        if(err){
+            throw err
+        }
+        console.log("Data Added");
+    })
+    console.log('File Created..')
+});
+
+- Read File {Q7}
+const path=require('path');
+const fs=require('fs');
+
+fs.readFile(path.join(__dirname,'test','test.txt'),'utf-8',(err,data)=>{
+    if(err){
+        throw err
+    }
+    // const content=Buffer.from(data);
+    // console.log(content.toString());
+    console.log(data);
+});
+-----------------------------------------------------
+OperatingSystem Module
+
+const os=require('os');
+console.log('OS Type : ',os.type());
+console.log('OS Platform : ',os.platform());
+console.log('CPU Architecture : ',os.arch());
+console.log('CPU Details : ',os.cpus());
+console.log('Free Memory : ',os.freemem());
+console.log('Total Memory : ',os.totalmem());
+console.log('Up Time : ',os.uptime());
+------------------------------------------------------------
+Events Module {Q8}
+
+const Emitter=require('events');
+const myEmitter=new Emitter();
+myEmitter.on('somename',(data)=>{
+    console.log(data);
+});
+myEmitter.emit('somename',{
+    name:'Saurav'
+});
+
+-----------------------------------------------------------
+HTTP Module {Q9,Q10,Q11}
+- How to reolve the issue of restarting the server again and again while working with HTTP Module
+    By using nodemon 
+    - Goto package,json file and add a custom script.
+    - "scripts": {
+                    "start":"node index",
+                    "dev":"nodemon index"
+                 }
+
+const http=require('http');
+const app=http.createServer((req,res)=>{
+    res.end('Hello from Server');
+});
+const PORT=process.env.PORT || 3000
+app.listen(PORT,()=>{
+    console.log(`Listening to port : ${PORT}`);
+});
+
+-------------------------------------------------------------
+=================================================
+Q1. Create a module file module.js and use a package cli-color . Print some text in Red, Blue, Geen color.
+Sol.
+const color=require('cli-color');
+console.log(color.red('Hello from Node Js in Red'));
+console.log(color.green('Hello from Node Js in Green'));
+console.log(color.blue('Hello from Node Js in Blue'));
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Q2. Create a auth.js file in which there is a function which takes a username and simply prints that in console window. Import the module in module.js and execute it.
+Sol.
+- auth.js
+const register=function (username){
+    console.log(`User ${username} has been registered.`)
+}
+module.exports=register
+- module.js
+const register=require('./auth');
+register('Kumar Saurav');
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Q3. Create the same program and also import a function login which displays the username same as register. Here we have to export and import two methods at same time.
+Sol.
+- auth.js
+const register=function (username){
+    console.log(`User ${username} has been registered.`)
+}
+const login=function(username,password){
+    console.log(`User ${username} succefully logged in.`)
+}
+module.exports={
+    register,//register:register
+    login//login:login
+}
+- module.js
+const auth=require('./auth');
+auth.register('Kumar Saurav');
+auth.login("Kumar Saurav");
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Q4. Create a folder test in the current directory using file system.
+Sol.
+const path=require('path');
+const fs=require('fs');
+
+fs.mkdir(path.join(__dirname,'/test'),(err)=>{
+    if(err){
+        console.log('Something Went Wrong',err)
+        return
+    }
+    console.log("Folder Created");
+});
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++
+Q5. Create a file named test.txt inside test folder using file system.
+Sol.
+const path=require('path');
+const fs=require('fs');
+
+fs.writeFile(path.join(__dirname,'test','test.txt'),'Hello Node',(err)=>{
+    if(err){
+        throw err
+    }
+    console.log('File Created..')
+})
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Q6. Create the same program to append 'More Data' in the existing file data.
+fs.writeFile(path.join(__dirname,'test','test.txt'),'Hello Node \n',(err)=>{
+    if(err){
+        throw err
+    }
+    fs.appendFile(path.join(__dirname,'test','test.txt'),'More Data',(err)=>{
+        if(err){
+            throw err
+        }
+        console.log("Data Added");
+    })
+    console.log('File Created..')
+})
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Q7. Read the data of file test.txt inside test folder using FileSystem
+Sol.
+fs.readFile(path.join(__dirname,'test','test.txt'),'utf-8',(err,data)=>{
+    if(err){
+        throw err
+    }
+    // const content=Buffer.from(data);
+    // console.log(content.toString());
+    console.log(data);
+});
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Q8. On Registration of a user send three messages - successfully registered, registraion mail sent, welcome mail sent. using Event Emitter.
+Sol.
+const Emitter=require('events');
+const emitter = new Emitter();
+
+class Auth extends Emitter{
+    register(username){
+        console.log(`User : ${username} successfully registered.`);
+        this.emit('register',username);
+    }
+}
+
+const auth=new Auth();
+auth.on('register',(username)=>{
+    console.log(`Registration Mail sent to User : ${username}`);
+});
+auth.on('register',(username)=>{
+    console.log(`Sending Welcome Mail to User : ${username}`);
+});
+auth.register('Kumar');
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Q9. Create two pages(index.html,about.html) inside a public folder and show them using two different routes.Also send status code 200 and content type html in the header.
+Sol.
+const http=require('http');
+const fs=require('fs');
+const path=require('path')
+const app=http.createServer((req,res)=>{
+    res.writeHead(200,{
+        'Content-Type':'text/html'
+    })
+    
+    if(req.url==='/'){
+    fs.readFile(path.join(__dirname,'public','index.html'),(err,content)=>{
+        if(err){
+            throw err
+        }
+        res.end(content);
+    })
+    }
+    else if(req.url==='/about'){
+        fs.readFile(path.join(__dirname,'public','about.html'),(err,content)=>{
+            if(err){
+                throw err
+            }
+            res.end(content);
+        })
+    }
+});
+const PORT=process.env.PORT || 3000
+app.listen(PORT,()=>{
+    console.log(`Listening to port : ${PORT}`);
+});
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Q10. Create the same program as above but this time make the filepath dynamic , if the user enters a invalid route he will be redirected to 404 Not Found page.
+Sol.
+const http=require('http');
+const fs=require('fs');
+const path=require('path')
+const app=http.createServer((req,res)=>{
+    
+    let filepath=path.join(__dirname,'public',req.url==='/'?'index.html':req.url+'.html')
+    fs.readFile(filepath,(err,content)=>{
+        if(err){
+            fs.readFile(path.join(__dirname,'public','error.html'),(err,data)=>{
+                if(err){
+                    res.writeHead(500)
+                    res.end('Error!!');
+                }
+                else{
+                    res.writeHead(404,{
+                        'Content-Type':'text/html'
+                    })
+                    res.end(data)
+                }
+            })
+        }
+        else{
+            res.writeHead(200,{
+                'Content-Type':'text/html'
+            })
+            res.end(content)
+        }
+    })
+});
+const PORT=process.env.PORT || 3000
+app.listen(PORT,()=>{
+    console.log(`Listening to port : ${PORT}`);
+});
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Q11. Create the same program as above and add a css file to it which reflect the home page.
+Sol.
+const http=require('http');
+const fs=require('fs');
+const path=require('path')
+const app=http.createServer((req,res)=>{
+    
+    let filepath=path.join(__dirname,'public',req.url==='/'?'index.html':req.url)
+
+    let contentType='text/html'
+    let ext=path.extname(filepath)
+    if(!ext){
+        filepath+='.html'
+    }
+    switch(ext){
+        case '.css':
+            contentType='text/css'
+            break;
+        case '.js':
+            contentType='text/javascript'
+            break;
+        default:
+            contentType='text/html'
+    }
+
+    fs.readFile(filepath,(err,content)=>{
+        if(err){
+            fs.readFile(path.join(__dirname,'public','error.html'),(err,data)=>{
+                if(err){
+                    res.writeHead(500)
+                    res.end('Error!!');
+                }
+                else{
+                    res.writeHead(404,{
+                        'Content-Type':contentType
+                    })
+                    res.end(data)
+                }
+            })
+        }
+        else{
+            res.writeHead(200,{
+                'Content-Type':contentType
+            })
+            res.end(content)
+        }
+    })
+});
+const PORT=process.env.PORT || 3000
+app.listen(PORT,()=>{
+    console.log(`Listening to port : ${PORT}`);
+});
+
+
+
+

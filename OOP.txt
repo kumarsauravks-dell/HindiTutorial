@@ -1,0 +1,164 @@
+OOP (Object Oriented Programming)
+- Is a paridgm(style) to write program.Different others also available like Procedural Programming or Functional Programming.
+- Abstraction - Hum jo light bulb jalate hai to bahut kuch nhi janna hai bulb k bare bas switch dabana hai.
+----------------------------------
+Constructor function (Q1,Q2)
+- First letter of a construtor function in Js should be in capital letters. We can get an idea that we need to create an object of it.
+- Behind the scenes Classes bhi lastly Constructor Function hi bnte hain.
+- Example
+function BankAccount(customerName,balance=0){
+    this.customerName=customerName;//variables but properties in OOP
+    this.accountNumber=Date.now();
+    this.balance=balance;
+}
+
+const rakeshAccount=new BankAccount('Rakesh',1000);
+const johnAccount=new BankAccount('John Doe');
+console.log(rakeshAccount,johnAccount);
+}
+
+- Here we can easily modify the value from outside like rakeshAccount.balance=20000;
+    - To prevent this we have a concept in OOP called encapsulation.
+
+---------------------------------------------------------------
+Prototype {Q3}
+- Above progam me jab hum constructor function ka object bnate hain to deposit and withdraw function ka bhi object hr baar banta hai ek naye instance k sath.
+    Har object k liye dono function banne se memory consumption jada ho rha hai jabki hme har baar ye chaiye bhi nhi. The solution is Prototype.
+- Jab bhi koi function create krte hai javascript uske upar Prototype naam ka ek empty object add kr deta hai.
+- Prototype chain k help se hum ye do methods easily use kr paayenge bina repeat kiye har instanse k sath.
+    Jab bhi hum koi naya object bnayenge to uske constructor me us function/property ko check krega phir wo uske prototype me bhi check krega... aise wo check krta jayega...lastly dadaji Object k paas jayega.
+- Array bhi ek inbuilt constructor hai javascript k andar.Agar hum uska prototype check kre to hume sare methods mil jayenge jinhe hum array k sath use krte hain.
+
+----------------------------------------------------------------
+Classes {Q4}
+- Class creation me under the hood constructor function hi kaam krti hai.
+    Class use krne se humara code bahut readable ho jata hai aur wo jo funtions hm prototype k through add kr rhe uski bhi jarurat nhi hoti, class ye by default krti hai.
+- Classes k sath hoisting kaam nhi krti matlab pehle declare krna hoga tabhi use kr skte hain , jabki function k sath aisa nhi hota.
+
+==============================================
+Questions with Solution
+==============================================
+Q1. Create a constructor function BankAccount having properties like customerName,accountNumber,balance.Also create a deposit method to deposit and withdraw to withdraw some amount to customer account.
+Sol.
+function BankAccount(customerName,balance=0){
+    this.customerName=customerName;//variables but properties in OOP
+    this.accountNumber=Date.now();
+    this.balance=balance;
+
+    this.deposit=function (amount){
+        this.balance+=amount;
+    }
+    this.withdraw=function(amount){
+        this.balance-=amount;
+    }
+}
+
+const rakeshAccount=new BankAccount('Rakesh',1000);
+const johnAccount=new BankAccount('John Doe');
+rakeshAccount.deposit(4000);
+rakeshAccount.withdraw(500);
+johnAccount.deposit(100);
+console.log(rakeshAccount);
+console.log(johnAccount);
+
+-----------------------------------------
+Q2. Create two forms in html one to createAccount and second to depositAmount . Manipulate the dom and create same functionality as above program.
+Sol.
+- html
+    <h1>Coders Bank</h1>
+    <form id="accountForm">        
+        <input type="text" id="customerName" placeholder="Customer Name">
+        <input type="number" id="balance" placeholder="Opening Balance">
+        <input type="submit" value="Create Account">
+    </form>
+    <hr>
+    <form  id="depositForm">
+        <input type="text" id="accountNumber" placeholder="Account Number">
+        <input type="number" id="amount" placeholder="Deposit Amount">
+        <input type="submit" value="Deposit">
+    </form>
+- js
+function BankAccount(customerName,balance=0){
+    this.customerName=customerName;//variables but properties in OOP
+    this.accountNumber=Date.now();
+    this.balance=balance;
+
+    this.deposit=function (amount){
+        this.balance+=amount;
+    }
+    this.withdraw=function(amount){
+        this.balance-=amount;
+    }
+}
+
+const accountForm = document.querySelector('#accountForm');
+const customerName = document.querySelector('#customerName');
+const balance = document.querySelector('#balance');
+
+const depositForm = document.querySelector('#depositForm');
+const accountNumber = document.querySelector('#accountNumber');
+const amount = document.querySelector('#amount');
+
+const accounts=[];
+
+accountForm.addEventListener('submit',(e)=>{
+    e.preventDefault();
+    const account=new BankAccount(customerName.value,+balance.value);
+    accounts.push(account);
+    console.log(accounts);
+})
+
+depositForm.addEventListener('submit',e=>{
+    e.preventDefault();
+    const account = accounts.find((account)=>account.accountNumber===+accountNumber.value)
+    account.deposit(+amount.value);
+    console.log(accounts);
+})
+------------------------------------------
+Q3. First program me jo deposit aur withdraw ka method hai use protype k help se phir se create krna hai.
+Sol.
+function BankAccount(customerName,balance=0){
+    this.customerName=customerName;//variables but properties in OOP
+    this.accountNumber=Date.now();
+    this.balance=balance;
+}
+BankAccount.prototype.deposit=function (amount){
+    this.balance+=amount;
+};
+BankAccount.prototype.withdraw=function(amount){
+    this.balance-=amount;
+}
+
+const rakeshAccount=new BankAccount('Rakesh',4000);
+rakeshAccount.deposit(2000);
+console.log(rakeshAccount);
+------------------------------------------------------------
+Q4. Create the same program as first but with the use of classes.
+Sol.
+class BankAccount{
+    customerName;
+    accountNumber;
+    balance;
+    constructor(customerName,balance=0){
+        this.customerName=customerName;
+        this.accountNumber=Date.now();
+        this.balance=balance;        
+    }
+    deposit(amount){
+        this.balance+=amount;
+    }
+    withdraw(amount){
+        this.balance-=amount;
+    }
+}
+
+const rakeshAccount=new BankAccount('Rakesh K',2000);
+rakeshAccount.withdraw(500);
+console.log(rakeshAccount);
+
+const johnAccount=new BankAccount('John Doe');
+johnAccount.deposit(4000);
+console.log(johnAccount);
+
+
+============================================== 

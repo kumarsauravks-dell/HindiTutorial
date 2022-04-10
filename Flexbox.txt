@@ -1,0 +1,359 @@
+display:flex;
+kisi bhi div ko display:flex krne se uske andar k sare element ek line me aa jate hain.
+flex-container - parent div
+flex-items - parent div k andar k sare div.
+-----------------------------------------------
+flex:1;
+flex item ko width dene k liye flex:1; means 1X width, flex:2; means 2X width.
+
+Q1. 3 flex items me se middle wale ka width other two ka 2X krna hai?
+Sol.
+<body>
+    <div class="container">
+        <div class="item item1">
+            <h2>Item1</h2>
+            <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Eligendi exercitationem animi, dolor enim velit harum in deleniti corporis, unde ipsa sint perferendis facere impedit odit nesciunt et quisquam sapiente architecto laudantium hic rerum, dolorum inventore quidem non. Nostrum omnis voluptatum corrupti ipsam debitis officia possimus molestiae?</p>
+        </div>
+        <div class="item item2">
+            <h2>Item2</h2>
+            <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Eligendi exercitationem animi, dolor enim velit harum in deleniti corporis, unde ipsa sint perferendis facere impedit odit nesciunt et quisquam sapiente architecto laudantium hic rerum, dolorum inventore quidem non. Nostrum omnis voluptatum corrupti ipsam debitis officia possimus molestiae?</p>
+        </div>  
+        <div class="item item3">
+            <h2>Item3</h2>
+            <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Eligendi exercitationem animi, dolor enim velit harum in deleniti corporis, unde ipsa sint perferendis facere impedit odit nesciunt et quisquam sapiente architecto laudantium hic rerum, dolorum inventore quidem non. Nostrum omnis voluptatum corrupti ipsam debitis officia possimus molestiae?</p>
+        </div>  
+    </div>
+</body>
+<style>
+    body{
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    .container{
+        border: 1px solid grey;
+        display: flex;
+    }
+    .item{
+        border:2px solid blue;
+        background:#f1f1f1;
+        padding: 1.6rem;
+    }
+    .item1{
+        flex: 1;
+    }
+    .item2{
+        flex: 2;
+    }
+    .item3{
+        flex: 1;
+    }
+</style>
+-----------------------------------------------------
+order:2;
+flex item ki order define krne k liye.
+
+Q2. 3 flex items me se 1st 3rd me shift ho jaje 3rd 2nd me aur 1st 3rd me.
+Sol.
+<body>
+    <div class="container">
+        <div class="item item1">
+            <h2>Item1</h2>
+            <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Eligendi exercitationem animi, dolor enim velit harum in deleniti corporis, unde ipsa sint perferendis facere impedit odit nesciunt et quisquam sapiente architecto laudantium hic rerum, dolorum inventore quidem non. Nostrum omnis voluptatum corrupti ipsam debitis officia possimus molestiae?</p>
+        </div>
+        <div class="item item2">
+            <h2>Item2</h2>
+            <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Eligendi exercitationem animi, dolor enim velit harum in deleniti corporis, unde ipsa sint perferendis facere impedit odit nesciunt et quisquam sapiente architecto laudantium hic rerum, dolorum inventore quidem non. Nostrum omnis voluptatum corrupti ipsam debitis officia possimus molestiae?</p>
+        </div>  
+        <div class="item item3">
+            <h2>Item3</h2>
+            <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Eligendi exercitationem animi, dolor enim velit harum in deleniti corporis, unde ipsa sint perferendis facere impedit odit nesciunt et quisquam sapiente architecto laudantium hic rerum, dolorum inventore quidem non. Nostrum omnis voluptatum corrupti ipsam debitis officia possimus molestiae?</p>
+        </div>  
+    </div>
+</body>
+<style>
+    body{
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    .container{
+        border: 1px solid grey;
+        display: flex;
+    }
+    .item{
+        border:2px solid blue;
+        background:#f1f1f1;
+        padding: 1.6rem;
+    }
+    .item1{
+        order: 3;
+    }
+    .item2{
+        order: 1;
+    }
+    .item3{
+       order: 2;
+    }
+</style>
+------------------------------------------------------
+align-items:flex-start; (flex-end,center,stretch)
+- By default flex-container apne flex-items ki height le leta hai, agar hum use kuch height denge to hum items ko flex-container ke start,end,center me align kr skte hain.
+
+Q3. flex-container k all 3 items ko end me align krna hai?
+Sol.
+<body>
+    <div class="container">
+        <div class="item item1">
+            <h2>Item1</h2>
+            <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Eligendi exercitationem animi, dolor enim velit harum in deleniti corporis, unde ipsa sint perferendis facere impedit odit nesciunt et quisquam sapiente architecto laudantium hic rerum, dolorum inventore quidem non. Nostrum omnis voluptatum corrupti ipsam debitis officia possimus molestiae?</p>
+        </div>
+        <div class="item item2">
+            <h2>Item2</h2>
+            <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Eligendi exercitationem animi, dolor enim velit harum in deleniti corporis, unde ipsa sint perferendis facere impedit odit nesciunt et quisquam sapiente architecto laudantium hic rerum, dolorum inventore quidem non. Nostrum omnis voluptatum corrupti ipsam debitis officia possimus molestiae?</p>
+        </div>  
+        <div class="item item3">
+            <h2>Item3</h2>
+            <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Eligendi exercitationem animi, dolor enim velit harum in deleniti corporis, unde ipsa sint perferendis facere impedit odit nesciunt et quisquam sapiente architecto laudantium hic rerum, dolorum inventore quidem non. Nostrum omnis voluptatum corrupti ipsam debitis officia possimus molestiae?</p>
+        </div>  
+    </div>
+</body>
+<style>
+    body{
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    .container{
+        border: 1px solid grey;
+        display: flex;
+        height: 500px;
+        align-items: flex-end;
+    }
+    .item{
+        border:2px solid blue;
+        background:#f1f1f1;
+        padding: 1.6rem;
+    }
+</style> 
+---------------------------------------------------------
+flex-direction:column; (column-reverse,row,row-reverse)
+- flex items ko vertically align krne k liye use krte hain.
+
+Q4. flex-items ko vertically align krna hai aur wo bhi reverse order me?
+Sol.
+<body>
+    <div class="container">
+        <div class="item item1">
+            <h2>Item1</h2>
+            <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Eligendi exercitationem animi, dolor enim velit harum in deleniti corporis, unde ipsa sint perferendis facere impedit odit nesciunt et quisquam sapiente architecto laudantium hic rerum, dolorum inventore quidem non. Nostrum omnis voluptatum corrupti ipsam debitis officia possimus molestiae?</p>
+        </div>
+        <div class="item item2">
+            <h2>Item2</h2>
+            <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Eligendi exercitationem animi, dolor enim velit harum in deleniti corporis, unde ipsa sint perferendis facere impedit odit nesciunt et quisquam sapiente architecto laudantium hic rerum, dolorum inventore quidem non. Nostrum omnis voluptatum corrupti ipsam debitis officia possimus molestiae?</p>
+        </div>  
+        <div class="item item3">
+            <h2>Item3</h2>
+            <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Eligendi exercitationem animi, dolor enim velit harum in deleniti corporis, unde ipsa sint perferendis facere impedit odit nesciunt et quisquam sapiente architecto laudantium hic rerum, dolorum inventore quidem non. Nostrum omnis voluptatum corrupti ipsam debitis officia possimus molestiae?</p>
+        </div>  
+    </div>
+</body>
+<style>
+    body{
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    .container{
+        border: 1px solid grey;
+        display: flex;
+        flex-direction: column-reverse;
+    }
+    .item{
+        border:2px solid blue;
+        background:#f1f1f1;
+        padding: 1.6rem;
+    }
+</style>
+--------------------------------------------------------
+justify-content:space-between; (space-around, space-evenly, flex-start, flex-end,center,space-between)
+- Agar hum flex-content ko kuch width de den aur phir chahte hain unke beech me apne hisab k space dekhna.
+- width = flex-basis
+Q5. flex items k beech me equal spaces chaiye?
+Sol.
+<body>
+    <div class="container">
+        <div class="item item1">
+            <h2>Item1</h2>
+            <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Eligendi exercitationem animi, dolor enim velit harum in deleniti corporis, unde ipsa sint perferendis facere impedit odit nesciunt et quisquam sapiente architecto laudantium hic rerum, dolorum inventore quidem non. Nostrum omnis voluptatum corrupti ipsam debitis officia possimus molestiae?</p>
+        </div>
+        <div class="item item2">
+            <h2>Item2</h2>
+            <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Eligendi exercitationem animi, dolor enim velit harum in deleniti corporis, unde ipsa sint perferendis facere impedit odit nesciunt et quisquam sapiente architecto laudantium hic rerum, dolorum inventore quidem non. Nostrum omnis voluptatum corrupti ipsam debitis officia possimus molestiae?</p>
+        </div>  
+        <div class="item item3">
+            <h2>Item3</h2>
+            <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Eligendi exercitationem animi, dolor enim velit harum in deleniti corporis, unde ipsa sint perferendis facere impedit odit nesciunt et quisquam sapiente architecto laudantium hic rerum, dolorum inventore quidem non. Nostrum omnis voluptatum corrupti ipsam debitis officia possimus molestiae?</p>
+        </div>  
+    </div>
+</body>
+<style>
+    body{
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    .container{
+        border: 1px solid grey;
+        display: flex;
+        justify-content: space-evenly;
+    }
+    .item{
+        border:2px solid blue;
+        background:#f1f1f1;
+        padding: 1.6rem;
+        width: 20%;
+    }
+</style>
+--------------------------------------------------
+margin to flex-items
+- If we dont want wo fix the width of the flex-items and still want to show the spaces we can specify a margin, and to adjust that extra margin we can use minus margin.
+Q6. flex-items me width nhi margin right dena hai aur equal spaces show krne hai.
+Sol.
+<body>
+    <div class="container">
+        <div class="item item1">
+            <h2>Item1</h2>
+            <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Eligendi exercitationem animi, dolor enim velit harum in deleniti corporis, unde ipsa sint perferendis facere impedit odit nesciunt et quisquam sapiente architecto laudantium hic rerum, dolorum inventore quidem non. Nostrum omnis voluptatum corrupti ipsam debitis officia possimus molestiae?</p>
+        </div>
+        <div class="item item2">
+            <h2>Item2</h2>
+            <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Eligendi exercitationem animi, dolor enim velit harum in deleniti corporis, unde ipsa sint perferendis facere impedit odit nesciunt et quisquam sapiente architecto laudantium hic rerum, dolorum inventore quidem non. Nostrum omnis voluptatum corrupti ipsam debitis officia possimus molestiae?</p>
+        </div>  
+        <div class="item item3">
+            <h2>Item3</h2>
+            <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Eligendi exercitationem animi, dolor enim velit harum in deleniti corporis, unde ipsa sint perferendis facere impedit odit nesciunt et quisquam sapiente architecto laudantium hic rerum, dolorum inventore quidem non. Nostrum omnis voluptatum corrupti ipsam debitis officia possimus molestiae?</p>
+        </div>  
+    </div>
+</body>
+<style>
+    body{
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    .container{
+        border: 1px solid grey;
+        display: flex;
+        justify-content: space-between;
+        margin-right: -20px;
+    }
+    .item{
+        border:2px solid blue;
+        background:#f1f1f1;
+        padding: 1.6rem;
+        margin-right: 20px;
+    }
+</style>
+---------------------------------------------------
+responsive flex-item
+ We can use media queries to make our flex-item appears differently in mobile devices.
+
+ Q7. Mobile device me flex-items to ko column me dekhna hai?
+ <body>
+    <div class="container">
+        <div class="item item1">
+            <h2>Item1</h2>
+            <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Eligendi exercitationem animi, dolor enim velit harum in deleniti corporis, unde ipsa sint perferendis facere impedit odit nesciunt et quisquam sapiente architecto laudantium hic rerum, dolorum inventore quidem non. Nostrum omnis voluptatum corrupti ipsam debitis officia possimus molestiae?</p>
+        </div>
+        <div class="item item2">
+            <h2>Item2</h2>
+            <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Eligendi exercitationem animi, dolor enim velit harum in deleniti corporis, unde ipsa sint perferendis facere impedit odit nesciunt et quisquam sapiente architecto laudantium hic rerum, dolorum inventore quidem non. Nostrum omnis voluptatum corrupti ipsam debitis officia possimus molestiae?</p>
+        </div>  
+        <div class="item item3">
+            <h2>Item3</h2>
+            <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Eligendi exercitationem animi, dolor enim velit harum in deleniti corporis, unde ipsa sint perferendis facere impedit odit nesciunt et quisquam sapiente architecto laudantium hic rerum, dolorum inventore quidem non. Nostrum omnis voluptatum corrupti ipsam debitis officia possimus molestiae?</p>
+        </div>  
+    </div>
+</body>
+<style>
+    body{
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    .container{
+        border: 1px solid grey;
+        display: flex;
+    }
+    .item{
+        border:2px solid blue;
+        background:#f1f1f1;
+        padding: 1.6rem;
+    }
+    @media (max-width:640px){
+        .container{
+            flex-direction: column;
+        }
+    }
+</style>
+
+Q8. 30px space k sath hme apne flex-items ko desktop resolution me 3, mobile me 1 , tab me 2 hi show krne hain.
+Sol.
+<body>
+    <div class="container">
+        <div class="item item1">
+            <h2>Item1</h2>
+            <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Eligendi exercitationem animi, dolor enim velit harum in deleniti corporis, unde ipsa sint perferendis facere impedit odit nesciunt et quisquam sapiente architecto laudantium hic rerum, dolorum inventore quidem non. Nostrum omnis voluptatum corrupti ipsam debitis officia possimus molestiae?</p>
+        </div>
+        <div class="item item2">
+            <h2>Item2</h2>
+            <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Eligendi exercitationem animi, dolor enim velit harum in deleniti corporis, unde ipsa sint perferendis facere impedit odit nesciunt et quisquam sapiente architecto laudantium hic rerum, dolorum inventore quidem non. Nostrum omnis voluptatum corrupti ipsam debitis officia possimus molestiae?</p>
+        </div>  
+        <div class="item item3">
+            <h2>Item3</h2>
+            <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Eligendi exercitationem animi, dolor enim velit harum in deleniti corporis, unde ipsa sint perferendis facere impedit odit nesciunt et quisquam sapiente architecto laudantium hic rerum, dolorum inventore quidem non. Nostrum omnis voluptatum corrupti ipsam debitis officia possimus molestiae?</p>
+        </div>  
+    </div>
+</body>
+<style>
+    body{
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    .container{
+        border: 1px solid grey;
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+    .item{
+        border:2px solid blue;
+        background:#f1f1f1;
+        padding: 1.6rem;
+        box-sizing: border-box;
+        width: calc(1/3*100% - (1-1/3)*30px);
+    }
+    
+    @media (max-width:1024px){
+        .item{
+            width: calc(1/2*100% - (1-1/3)*30px);
+        }
+    }
+    @media (max-width:640px){
+        /* .item{
+            width: calc(1*100% - (1 - 1/3)*30px);
+        } */
+        .item{
+            width: 100%;
+        }
+        .container{
+            flex-direction: column;
+        }
+    }
+</style>
+------------------------------------------------------
+
+
+

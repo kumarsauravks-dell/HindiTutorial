@@ -1,0 +1,233 @@
+- Create ExpressJs project {Q1}
+    - npm init -y
+    - npm i express
+    - create a file called server.js to store all server code.
+- Create a server
+const express=require('express');
+const app=express();
+
+app.get('/',(req,res)=>{
+    res.send('Hello from Express...')
+})
+const PORT=process.env.PORT || 3000
+app.listen(PORT,()=>console.log(`Listening to port ${PORT}`));
+------------------------------------------------------------
+- To Restart server automatically we can use a package -> nodemon. Oterwise we have to restart the server manually.
+    - npm i -D nodemon -> to use it in dev dependency only because production me iski jarurat nhi hai.
+    - In package.json create a script 
+    "scripts": {
+            "dev": "nodemon server", // for dev
+            "start":"node server" // for production
+        }
+    - command to run the created script -> npm run dev
+
+-----------------------------------------------------------
+static middleware 
+- If we want our static files like index.html or about.html to render in the browser then we dont need to specify the path .
+    Just we need to store the files in a folder and specify the folder path only.
+    - app.use(express.static('public'));
+    - to make about page run - specify the navigation link as -> href='/about.html'
+    - we cant set the path as before (localhost:3000/about), just we can see the full path with extention(localhost:3000/about.html) in browser.
+    - we will store the css and js files in this public directory and use it.
+-------------------------------------------------------------
+Download file {Q2}
+- Spectify the download path in html 
+    - <a href="/download">Download</a>
+- Configure the path in js
+        app.get('/download',(req,res)=>{
+        res.download(path.resolve(__dirname+'/about.html'));
+    })
+---------------------------------------------
+Template Engine {Q3,Q4}
+- To show dynamic content in out html  we need to use Template Engine like pug,ejs,handlebar
+- To install ejs -> npm i ejs
+- To Configure -> app.set('view engine','ejs');
+- To check -> console.log(app.get('view engine'));
+- Create a folder views in root -> (how do we get its path -> console.log(app.get('views'));
+    - To specify custom folder(templates) for views -> app.set('views',path.resolve(__dirname)+'templates');
+- Create a index.ejs page inside views folder
+    - render it like :
+        app.get('/',(req,res)=>{
+        res.render('index');
+    });
+    - To show dynamin content
+            app.get('/',(req,res)=>{
+            res.render('index',{
+                title:'My Home Page'
+            });
+        })
+    - <title><%=title%></title>
+- Include the common code at one single place
+    - in index.ejs
+        <%- include('../partials/nav.ejs');%>
+    - inside partials folder nav.ejs
+        <a href="/">Home</a>
+        <a href="/about">About</a>
+
+-----------------------------------------------------------
+Express Router {Q5}
+- Create a folder called routes in which create a index.js file.
+    const router=require('express').Router();
+
+    router.get('/',(req,res)=>{
+        res.render('index',{
+            title:'My Home Page'
+        });
+    });
+
+    module.exports=router;
+- Now import the router in server.js
+    const mainRouter=require('./routes/index')
+    app.use(mainRouter);
+- We can also add a prefix in the routes 
+    app.use('/en',mainRouter);
+-------------------------------------------------------------
+Middleware {Q6}
+- Request aur response k beech hum check kr skte hain aur phir response ko proceed krte hai ,jaise user logged in hai ya nhi, token valid hai ya nhi .Yha middlewares help krte hain.
+- can have multiple middleware function to process particular response.
+- Create a folder for middlewares and add a file apiKey.js
+    function apiKey(req,res,next){
+        const api_key='1234567';
+        console.log(req.query);
+        next();
+    }
+    module.exports=apiKey;
+- Inclde the router in our router file
+    const apiKeyMiddleware=require('../middlewares/apiKey');
+    router.get('/api/products',apiKeyMiddleware,(req,res)=>{
+    res.json([
+            {
+                id:'123',
+                name:"chrome"
+            },{
+                id:'124',
+                name:"firefox"
+            }
+        ])
+    })
+- To use the middleware to all the routes -> router.use(apiKeyMiddleware);
+- To use the middleware globally - app.use(apiKeyMiddleware);
+- to pass multiple middleware in a single route -> router.get('/api/products',[apiKeyMiddleware,middleware],(req,res)=>{
+--------------------------------------------
+Imp Links
+- https://babeljs.io/docs/en/babel-standalone
+- https://reactjs.org/docs/cdn-links.html
+- getbootstrap.com 
+===============================================
+Questions With Solutions
+===============================================
+Q1. Create a NodeJs Application , use express and render 2 pages home.html and about.html .
+Sol.
+const express=require('express');
+const path=require('path')
+const app=express();
+
+app.get('/',(req,res)=>{
+    res.sendFile(path.resolve(__dirname+'/index.html'));
+})
+
+app.get('/about',(req,res)=>{
+    res.sendFile(path.resolve(__dirname+'/about.html'));
+})
+const PORT=process.env.PORT || 3000
+app.listen(PORT,()=>console.log(`Listening to port ${PORT}`));
+
+---------------------------------------------------------
+Q2. Create a download link and allow user to download the about.html file.
+Sol.
+- index.html
+<a href="/download">Download</a>
+
+- server.js
+app.get('/download',(req,res)=>{
+    res.download(path.resolve(__dirname+'/about.html'));
+})
+---------------------------------------------------------
+Q3. Show dynamin content in the title of homepage using ejs view engine.
+Sol.
+- server.js
+app.set('view engine','ejs');
+
+app.get('/',(req,res)=>{
+    res.render('index',{
+        title:'My Home Page'
+    });
+})
+- index.ejs
+<title><%=title%></title>
+----------------------------------------------------------
+Q4. Include the repeated code of head and nav inside a folder partials and render it.
+Sol.
+- head.ejs
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+- index.ejs
+<head>
+    <%- include('../partials/head.ejs') %>    
+    <title><%=title%></title>
+</head>
+
+- nav.ejs
+<a href="/">Home</a>
+<a href="/about">About</a>
+
+- index.ejs
+<body>
+    <%- include('../partials/nav.ejs');%>
+    <h1>Welcome to homepage</h1>
+</body>
+----------------------------------------------------------
+Q5. Create express router and render the home and index page.
+Sol.
+- routes/index.js
+const router=require('express').Router();
+router.get('/',(req,res)=>{
+    res.render('index',{
+        title:'My Home Page'
+    });
+})
+router.get('/about',(req,res)=>{
+    res.render('about');
+})
+module.exports=router;
+
+- server.js
+const mainRouter=require('./routes/index')
+app.use(mainRouter);
+
+-----------------------------------
+Q6. Create a middleware to check the apiKey in the query string of a particular route localhost:3000/products?api_key=1234567
+Sol.
+- routes/index.js
+const apiKeyMiddleware=require('../middlewares/apiKey');
+router.get('/api/products',apiKeyMiddleware,(req,res)=>{
+    res.json([
+        {
+            id:'123',
+            name:"chrome"
+        },{
+            id:'124',
+            name:"firefox"
+        }
+    ])
+})
+
+- middleware/apiKey.js
+function apiKey(req,res,next){
+    const api_key='1234567';
+    const userApiKey=req.query.api_key;
+    if(userApiKey && (userApiKey===api_key)){
+        next();
+    }
+    else{
+        res.json(
+            {message:"Not allowed!"}
+        )
+    }
+    
+}
+module.exports=apiKey;
+
+------------------------------------------------------

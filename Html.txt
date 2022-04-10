@@ -1,0 +1,30 @@
+------------------------------------------------------------------
+Html koi programmming language nhi ,ek markupup language hai ye btata hai ki kon sa section browser me kaha pe hona chaiye.
+
+-------------------------------------------------------------------
+Block level Element Vs Inline Element
+Block level Element -> Full width cover krta hai. Eg: div, p , h , ul
+Inline Element -> Element ka width cover krta hai. Eg: span, input, button
+
+Note : Block level Element ko hum inline css aplly krenge to -> width,height will not work & verical padding/margin will not work.
+-------------------------------------------------------------------
+<input type="file" />
+<input type="file" multiple />
+
+-------------------------------------------------------------------
+<audio controls>
+    <source src="audio.mp3" type="audio/mp3">
+    Your Browser does not support audio Element.
+</audio>
+
+<video controls>
+    <source src="video.mp4" type="video/mp4">
+    Your Browser does not support video Element.
+</video>
+
+--------------------------------------------------------------------
+Semantic Tags
+Semantic means jise dekh k kuch sense bane . Eg: <header>, <nav>, <section>, <footer>
+<div> is not a Semantic Tag.
+
+

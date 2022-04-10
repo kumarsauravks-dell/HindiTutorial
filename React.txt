@@ -1,0 +1,59 @@
+Create React Project
+- npx create-react-app react-cart 
+- cd react-cart
+- npm start / npm run start
+--------------------------------
+Render some custom html 
+- Need to create a index.js file
+    import ReactDOM from 'react-dom';
+    ReactDOM.render(
+        <h1>Hello from Coders Gyan</h1>,
+        document.getElementById('root')
+    )
+--------------------------------
+Render a component
+- App.js
+    function App(){
+        return <h1>Hello from Coder's Gyan</h1>
+    }
+    export default App
+
+- index.js
+    import ReactDOM from 'react-dom';
+    import App from './App';
+
+    ReactDOM.render(
+        <App />,
+        document.getElementById('root')
+    )
+
+----------------------------------
+React Router
+- npm i react-router-dom
+- 
+
+----------------------------------
+Shortcut commands, Referenes
+- To generate function component
+    - rfc , rfce
+    - Package Name -> ES7 React/Redux/
+- Why we use Link instead of a tag?
+    - to not reload the page while clicking to anchor element.
+--------------------------------
+useState Hook
+- const [products,setProducts]= useState([]);
+    - yha destructuring ho rhi hai.
+    - do variables hai products and setProducts, products data rakhegi aur setProducts se hum us data ko modify kr skte hain.
+    - product ki initial value hum empty array rakh rhe hai .
+    - state reactive hota hai -> products ki value change hogi to component rerender hoga automatically.
+useEffect Hook
+- useEffect(()=>{  },[]);
+    - jaise hi state ki value change hui to hme kuch task krna hai use hum useEffect me define krenge.
+    - second parameter me jo array hai wo hai -> dependency array -> means agar [products] likhe to jab bhi products state me kuch change hoga ye useEffect k andar ka code run krega.
+    - dependency array me multiple state bhi pass kr skte hain.
+    - dependency array empty hai -> [] -> matlab jab component mount hogi to wo ek baar run hoga.
+
+
+
+
+
