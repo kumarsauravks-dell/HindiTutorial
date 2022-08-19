@@ -1,0 +1,4 @@
+Install Strapi
+    - npx create-strapi-app@latest coders-blog-api
+    - Quickstart
+    - npm run develop
