@@ -1,6 +1,8 @@
 Register a user
 Login a user
 Who am i
+Refresh the token
+Logout the user
 Add new product
 Update a product]
 Get all products

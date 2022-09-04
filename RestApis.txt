@@ -80,7 +80,7 @@ Install joi validation for validations
 Validation 
     - npm i joi
     - create validation for the registration data in controllers/auth/registerController.js
-        import Joi, { string } from "joi";
+        import Joi from "joi";
         const registerController={
             register(req,res,next){
 
@@ -251,7 +251,7 @@ Validation
         res.json({access_token:access_token})
 ------------------------------------------------------------------
 Now we have to create an api for Login
-    - Create a loginController -> controllers/loginController.js
+    - Create a loginController -> controllers/auth/loginController.js
         import Joi from "joi"
         import { User } from "../../models";
         import bcrypt from 'bcrypt'
@@ -297,19 +297,572 @@ Now we have to create an api for Login
         export {default as loginController} from './auth/loginController'
 
     - Create a custom error for invalid credentials -> CustomErrorHandler.js
-        static wrongCredentials(message='Username or password is wrong!'){
-        return new CustomErrorhandler(401,message)
-    }
+            static wrongCredentials(message='Username or password is wrong!'){
+            return new CustomErrorhandler(401,message)
+        }
     - Add route for login controller -> routes/index.js
         import {loginController} from '../controllers';
         routes.post('/login',loginController.login);
 -------------------------------------------------------------------
+Now we have to verify Who am I
+    - First create two custom error for unauthorised(token not valid) and not found (the user we are searching for does not exist in db)
+    - Update services/CustomErrorHandler.js
+        static unAuthorised(message='Unauhorised User'){
+            return new CustomErrorhandler(401,message)
+        }
+        static notFound(message='404 Not found'){
+            return new CustomErrorhandler(404,message)
+        }
+    - Add a JwtService file to verify the token
+    - Update services/JwtService.js
+        static verify(token,secret=JWT_SECRET){
+            return jwt.verify(token,secret);
+        }
+    - Create an auth file to verify the token which we have sent to server is valid or not.
+    - Mainly this middleware will return the id and role if the user is an authorised user.
+    - Create middlewares/auth.js
+        import CustomErrorhandler from "../services/CustomErrorHandler";
+        import JwtService from "../services/JwtService";
 
+        const auth=async (req,res,next)=>{
+            let authHeader=req.headers.authorization;
+            console.log(authHeader);
+            if(!authHeader){
+                return next(CustomErrorhandler.unAuthorised());
+            }
+            const token=authHeader.split(' ')[1];
+            
+            try{
+                const {_id,role}=await JwtService.verify(token);
+                // req.user={};
+                // req.user._id=_id;
+                // req.user.role=role;
+                const user={
+                    _id,role
+                }
+                req.user=user;
+                next();
+            }catch(err){
+                return next(CustomErrorhandler.unAuthorised());
+            }
+        }
+        export default auth
+    - Now we have to create a controller which will return the verified user whose id is recieved from auth middleware
+    - Create userController.js
+        import { User } from "../../models";
+        import CustomErrorhandler from "../../services/CustomErrorHandler";
 
+        const userController={
+            async me(req,res,next){
+                try{
+                    const user=await await User.findOne({_id:req.user._id}).select('-password -updatedAt -__v');
+                    if(!user){
+                        return next(CustomErrorhandler.notFound())
+                    }
+                    res.json(user);
+                }catch(err){
+                    return next(err);
+                }
+            }
+        }
+        export default userController;
+    - add default export for the controller 
+    - update controllers/index.js
+        export {default as userController} from './auth/userController'
+        
+    - Add the respective route to the route file
+    - Update routes/index.js
+        routes.get('/me',auth, userController.me)
+
+    - To request for this created Me route 
+    - Login using url -> http://localhost:5000/api/login
+        -> In the body pass the email and password
+    - Copy the access_token recieved .
+    - Now make a get request by passing the header info
+        ->  url -> http://localhost:5000/api/me
+        -> Header 
+            -> Key:Authorization 
+            -> Value: Bearer 'The copied access_token'
+        
+----------------------------------------------------------------
+Refresh Token
+    - same as access_token but validity jada hogi.
+    - refresh token ki help se 60s k baad nayi access_token generate ke paayenge taki user experience kharab na ho.
+    - acess token me hum kuch database me store nhi kr rhe the but refresh_token ko krenge.
+        jab user logout krega to use hum database se delete kr denge.
+Steps to create
+    - Create a REFRESH_SECRET in the .env file and include it in config/index.js
+        - REFRESH_SECRET=thisismyrefreshsecret
+        - export const{
+                APP_PORT,DEBUG_MODE,DB_URL,JWT_SECRET,REFRESH_SECRET
+            }=process.env;
     
+    - Create a schema for access token as we need to store it in database.
+    - Create a file models/refreshToken.js
+        import mongoose from 'mongoose';
+        const Schema=mongoose.Schema;
+        const refreshTokenSchema=new Schema({
+            token:{type:String,unique:true}
+        },{timestamps:false});
+        export default mongoose.model('RefreshToken',refreshTokenSchema,'refreshTokens')
 
+    - Include it in models/index.js
+        export {default as RefreshToken} from './refreshToken'
 
+    - As we have included the access_token same we have to include refresh_token in the registerController and loginController
+    - Update controllers/registerController.js
+        let access_token
+        let refresh_token
+        try{
+            const result=await user.save();
+            console.log(result);
+            //token
+            access_token= JwtService.sign({_id:result._id,role:result.role});
+            refresh_token=JwtService.sign({_id:result._id,role:result.role},'1y',REFRESH_SECRET)
+            //database whitelist
+            await RefreshToken.create({token:refresh_token});
+        }catch(err){
+            return next(err);
+        }
+        res.json({access_token:access_token,refresh_token})
+    - Update controllers/loginController.js
+            const access_token=JwtService.sign({
+                _id:user._id,
+                role:user.role
+            });
+            const refresh_token=JwtService.sign({_id:user._id,role:user.role},'1y',REFRESH_SECRET)
+            await RefreshToken.create({token:refresh_token});
+            res.json({access_token,refresh_token})
+    - Check now by signup and login if we are getting both access_token as well as refresh_token
 
+    - Now we have to create a route for refresh token
+    - First Create a controller file controllers/auth/refreshController.js
+        import Joi from "joi";
+        import { REFRESH_SECRET } from "../../config";
+        import { RefreshToken, User } from "../../models";
+        import CustomErrorhandler from "../../services/CustomErrorHandler";
+        import JwtService from "../../services/JwtService";
+
+        const refreshController={
+            async refresh(req,res,next){
+                //validation
+                const refreshSchema=Joi.object({
+                    refresh_token:Joi.string().required()
+                });
+                const {error}=refreshSchema.validate(req.body)
+                if(error){
+                    return next(error)
+                }
+                //database
+                let refreshtoken;
+                try{
+                    refreshtoken=await RefreshToken.findOne({token:req.body.refresh_token});
+                    if(!refreshtoken){
+                        return next(CustomErrorhandler.unAuthorised('Invalid refresh token'))
+                    }
+                    let userId;
+                    try{
+                        const {_id}=await JwtService.verify(refreshtoken.token,REFRESH_SECRET);
+                        userId=_id;
+                    }catch(err){
+                        return next(CustomErrorhandler.unAuthorised('Invalid refresh token'))
+                    }
+
+                    const user=await User.findOne({_id:userId});
+                    if(!user){
+                        return next(CustomErrorhandler.unAuthorised('No user found'));
+                    }
+                    //tokens
+                    const access_token=JwtService.sign({_id:user._id,role:user.role});
+                    const refresh_token=JwtService.sign({_id:user._id,role:user.role},'1y',REFRESH_SECRET)
+                    await RefreshToken.create({token:refresh_token});
+                    res.json({access_token,refresh_token})
+
+                }catch(err){
+                    return next(new Error('Something went wrong'+err.message))
+                }
+            } 
+        }
+
+        export default refreshController
+    - Include it in controller/index.js
+        export {default as refreshController} from './auth/refreshController'
+    
+    - Update the routs/index.js
+        routes.post('/refresh',refreshController.refresh);
+
+    - Check it is working
+        - In postman create a post request to url
+            - http://localhost:5000/api/refresh
+        - Pass the body as 
+            {
+                "refresh_token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MzEwOTI1MDQ5OTM4ZmUzYzBjZDNlMTUiLCJyb2xlIjoiY3VzdG9tZXIiLCJpYXQiOjE2NjIwMzA3MjgsImV4cCI6MTY5MzU4ODMyOH0.czXfKHbcp133vP05PaBb6DHXVFFiouVrx4vJAgDsdIw"
+            }
+------------------------------------------------------
+Logout 
+    - Create a function for logout in loginController
+    - Update controllers/loginController.js
+        async logout(req,res,next){
+            //validation
+            const refreshSchema=Joi.object({
+                refresh_token:Joi.string().required()
+            });
+            const {error}=refreshSchema.validate(req.body)
+            if(error){
+                return next(error)
+            }
+            
+            try{
+                await RefreshToken.deleteOne({token:req.body.refresh_token});
+
+            }catch(ex){
+                return next(new Error('Something went wrong in the database.'))
+            }
+            res.json({status:1})
+        }
+    - Update the route routes/index.js
+        routes.post('/logout',auth,loginController.logout);
+    
+    - Check
+    - Create a post request 
+        url: http://localhost:5000/api/logout
+        headers : Authorization Bearer access_token
+        body : {
+            "refresh_token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MzEwYmViMmZhMTdmNmZiNzhiYTQwNWYiLCJyb2xlIjoiY3VzdG9tZXIiLCJpYXQiOjE2NjIwNDE5MTAsImV4cCI6MTY5MzU5OTUxMH0.3EX9evYCAnA9XhkOZUCEPQRm0sWxnLpbtMfxZO4qrsk"
+        }
+--------------------------------------------------------
+================================================
+Products
+================================================
+Add a product
+    - We have to sore the image so we need to install multer package
+        - npm i --save multer
+    - Create a folder called uploads in the root directory
+    - Update server.js
+        import path from 'path'
+        global.appRoot=path.resolve(__dirname);
+        app.use(express.urlencoded({extended:false}))
+    - Create a custom error for server error
+    - Update CustomErrorHandler.js
+        static serverError(message='Internal server error'){
+            return new CustomErrorhandler(500,message)
+        }
+    - Create a model for product models/product.js
+        import mongoose from "mongoose";
+        const Schema= mongoose.Schema;
+        const productSchema=new Schema({
+            name:{type:String,required:true},
+            price:{type:Number,required:true},
+            size:{type:String,required:true},
+            image:{type:String,required:true}
+        },{timestamps:true})
+        export default mongoose.model('Product', productSchema,'products');
+    - import it in models/index.js
+        export {default as Product} from './product'
+    - Create a controller controllers/products/productController.js
+        import Joi from "joi"
+        import multer from "multer"
+        import path from 'path'
+        import fs from 'fs'
+        import CustomErrorhandler from "../../services/CustomErrorHandler"
+        import { Product } from "../../models"
+
+        const storage=multer.diskStorage({
+            destination:(req,file,cb)=>cb(null,'uploads'),
+            filename:(req,file,cb)=>{
+                const uniqueName=`${Date.now()}-${Math.round(Math.random()*1E9)}${path.extname(file.originalname)}`
+                cb(null,uniqueName)
+            }   
+        })
+
+        const handleMultipartData=multer({storage,limits:{fileSize:1000000*5}}).single('image')
+
+        const productController={
+            async store(req,res,next){
+                //multipart form data
+                handleMultipartData(req,res,async (err)=>{
+                    if(err){
+                        return next(CustomErrorhandler.serverError(err.message))
+                    }
+                    //console.log(req.file);
+                    const filePath=req.file.path;
+                    const productSchema=Joi.object({
+                        name:Joi.string().required(),
+                        price:Joi.number().required(),
+                        size:Joi.string().required()
+                    });
+                    const {error}=productSchema.validate(req.body);
+                    if(error){
+                        //delete the uploaded image
+                        fs.unlink(`${appRoot}/${filePath}`,(err)=>{
+                            if(err){
+                                return next(CustomErrorhandler.serverError(err.message))
+                            }
+                        });
+                        return next(error)
+                    }
+                    const {name,price,size}=req.body;
+                    let document;
+                    try{
+                        document=await Product.create({
+                            name,
+                            price,
+                            size,
+                            image:filePath
+                        })
+                    }catch(err){
+                        return next(err)
+                    }
+                    res.status(201).json(document);
+                });
+                
+                
+            }
+        }
+        export default productController
+    - import it in controllers/index.js
+        export {default as productController} from './products/productController'
+
+    - Create a route to post a product
+        routes.post('/products',productController.store)
+
+    - Check with postman
+        url : http://localhost:5000/api/products
+        body : formdata
+            name : 'Margarita'
+            price : 40000
+            size : L
+            image : upload the image file 
+===========================================================
+Check products can be created only by admin user
+    - Create a middleware to check if the user role is admin
+    - Create middlewares/admin.js
+        import {User} from '../models/index'
+        import CustomErrorHandler from '../services/CustomErrorHandler'
+
+        const admin=async (req,res,next)=>{
+            try{
+                const user=await User.findOne({_id:req.user._id});
+
+                if(user.role==="admin"){
+                    next();
+                }else{
+                    return next(CustomErrorHandler.unAuthorised())
+                }
+            }
+            catch(error){
+                return next(CustomErrorHandler.serverError())
+            }
+        }
+        export default admin;
+    - Now in the route we can use this middleware
+    - Update routes/index.js
+        routes.post('/products',[auth,admin],productController.store)
+    - To check just change on user role from customer to admin from compass.
+============================================================
+Update a product
+    - As we are repeting the code for productSchema , we can define it in a seperate file
+    - Create validators/productValidator.js
+        import Joi from "joi";
+        const productSchema=Joi.object({
+            name:Joi.string().required(),
+            price:Joi.number().required(),
+            size:Joi.string().required(),
+            image:Joi.string()
+        });
+
+        export default productSchema;
+    - Update controllers/productController.js to add update method 
+        import Joi from "joi"
+        import multer from "multer"
+        import path from 'path'
+        import fs from 'fs'
+        import CustomErrorhandler from "../../services/CustomErrorHandler"
+        import { Product } from "../../models"
+        import productSchema from "../../validators/productValidator"
+
+        const storage=multer.diskStorage({
+            destination:(req,file,cb)=>cb(null,'uploads'),
+            filename:(req,file,cb)=>{
+                const uniqueName=`${Date.now()}-${Math.round(Math.random()*1E9)}${path.extname(file.originalname)}`
+                cb(null,uniqueName)
+            }   
+        })
+
+        const handleMultipartData=multer({storage,limits:{fileSize:1000000*5}}).single('image')
+
+        const productController={
+            async store(req,res,next){
+                //multipart form data
+                handleMultipartData(req,res,async (err)=>{
+                    if(err){
+                        return next(CustomErrorhandler.serverError(err.message))
+                    }
+                    //console.log(req.file);
+                    const filePath=req.file.path;
+                    
+                    const {error}=productSchema.validate(req.body);
+                    if(error){
+                        //delete the uploaded image
+                        fs.unlink(`${appRoot}/${filePath}`,(err)=>{
+                            if(err){
+                                return next(CustomErrorhandler.serverError(err.message))
+                            }
+                        });
+                        return next(error)
+                    }
+                    const {name,price,size}=req.body;
+                    let document;
+                    try{
+                        document=await Product.create({
+                            name,
+                            price,
+                            size,
+                            image:filePath
+                        })
+                    }catch(err){
+                        return next(err)
+                    }
+                    res.status(201).json(document);
+                });
+                
+                
+            },
+            update(req,res,next){
+                //multipart form data
+                handleMultipartData(req,res,async (err)=>{
+                    if(err){
+                        return next(CustomErrorhandler.serverError(err.message))
+                    }
+                    let filePath;
+                    if(req.file){
+                        filePath=req.file.path;
+                    }
+                    
+                    const {error}=productSchema.validate(req.body);
+                    if(error){
+                        //delete the uploaded image
+                        if(req.file){
+                            fs.unlink(`${appRoot}/${filePath}`,(err)=>{
+                                if(err){
+                                    return next(CustomErrorhandler.serverError(err.message))
+                                }
+                            });
+                        }
+                        return next(error)
+                    }
+                    const {name,price,size}=req.body;
+                    let document;
+                    try{
+                        document=await Product.findOneAndUpdate({_id:req.params.id},{
+                            name,
+                            price,
+                            size,
+                            ...(req.file && {image:filePath})
+                        },{new:true})
+                    }catch(err){
+                        return next(err)
+                    }
+                    res.status(201).json(document);
+                });
+            }
+        }
+        export default productController
+    - Now add a route for upadating existing product
+    - Update routes/index.js
+        - routes.put('/products/:id',[auth,admin],productController.update)
+==============================================================
+Delete a product
+    - Upate the controllers/products/productController.js to add a delete method
+        async destroy(req,res,next){
+            const document=await Product.findOneAndRemove({_id:req.params.id});
+            if(!document){
+                return next(new Error('Nothing to delete'));
+            }
+            //image delete
+            const imagePath=document.image;
+            fs.unlink(`${appRoot}/${imagePath}`,(err)=>{
+                if(err){
+                    return next(CustomErrorhandler.serverError());
+                }
+            });
+            res.json(document)
+        }
+    - Update the routes/index.js
+        routes.delete('/products/:id',[auth,admin],productController.destroy)
+============================================================
+Get Product List
+    - We want to show the image url according to server which can be accessed through the url also.
+    - Update the .env file and add APP_URL
+        APP_URL=http://localhost:5000
+    - Include it in config/index.js
+        export const{
+            APP_URL
+        }=process.env;
+    
+    - Update models/product.js
+        const productSchema=new Schema({
+        name:{type:String,required:true},
+        price:{type:Number,required:true},
+        size:{type:String,required:true},
+        image:{type:String,required:true,get:(image)=>{
+            return `${APP_URL}/${image}`;
+        }}
+    - Update server.js
+        app.use('/uploads',express.static('uploads'))
+    
+    - Update controllers/products/productController.js and add index method to fetch all the list of Products
+        async index(req,res,next){
+            let documents;
+            try{
+                documents=await Product.find().select('-updatedAt -__v').sort({_id:-1});
+            }catch(err){
+                return next(CustomErrorhandler.serverError())
+            }
+            res.json(documents)
+        }
+    - Update the route/index.js
+        routes.get('/products',productController.index)
+    
+    - Check with postman
+        type: Get
+        url: http://localhost:5000/api/products 
+
+===========================================================
+Get a single product
+    - Update the controllers/products/productController.js
+        async show(req,res,next){
+            let document;
+            try {
+                document=await Product.findOne({_id:req.params.id}).select('-updatedAt -__v')
+            } catch (error) {
+                return next(CustomErrorhandler.serverError())
+            }
+            return res.json(document)
+        }
+    - Update the routes/index.js
+        routes.get('/products/:id',productController.show)
+    - We can observe an extra field for id is appearing 
+    - Modify the schema at models/product.js
+        const productSchema=new Schema({
+            name:{type:String,required:true},
+            price:{type:Number,required:true},
+            size:{type:String,required:true},
+            image:{type:String,required:true,get:(image)=>{
+                return `${APP_URL}/${image}`;
+            }}
+        },{timestamps:true,toJSON:{getters:true},id:false})
+    - Check in postman
+        type : Get
+        url : http://localhost:5000/api/products/631194344bce88a9892233e5
+
+    - Correction 
+    - As we have used the server path to let the user open it in the browser
+    - Now the destroy method is unable to delete the image according to new path.
+    - Modify the destroy method in controllers/products/productController.js
+        //const imagePath=document.image;
+        const imagePath=document._doc.image;
+===========================================================
 
 
 
