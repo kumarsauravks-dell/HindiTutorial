@@ -1,0 +1,3 @@
+Create npm project and install dependencies - express, moment, nodemon
+Create folders and files we need - public, js , css, index, img
+ 

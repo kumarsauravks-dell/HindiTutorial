@@ -1,0 +1,12 @@
+@font-face{
+    src: url('https://fonts.googleapis.com/css?family=Muli');
+    font-family: 'Muli';
+}
+body{
+    background: whitesmoke;
+    font-family: 'Muli',sans-serif;
+}
+.comment_box{
+    list-style: none;
+    padding-left: 0;
+}

@@ -1,0 +1,27 @@
+Frontend - HTML,CSS,JavaScript
+Backend - NodeJs, ExpressJs, Socket.io
+Database - MongoDb
+
+Steps
+    - Inside Project folder -> npm init -y
+    - npm i express moment
+    - npm i nodemon -D
+    - Create Folder public
+        - css -> style.css , img , js -> app.js, index.html
+    - Include css and js in index.html
+        <link rel="stylesheet" href="/css/style.css">
+        <script src="/js/app.js"></script>
+        Note : public folder is not defined in this path as we will define the public folder as static root folder in the server.js file.
+    - Change package.json file
+        "scripts": {
+                "dev": "nodemon server"
+            }
+    - Create a server.js file
+        - server.js
+            const express=require('express')
+            const app=express();
+            app.use(express.static('public'))
+            const PORT=process.env.PORT | 3000
+            app.listen(PORT,()=>console.log(`Listening to port ${PORT}`))
+    - Start the server 
+        - npm run dev
