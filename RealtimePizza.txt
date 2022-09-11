@@ -1,0 +1,60 @@
+Create a folder for the project(RealtimePizza)
+    - Inside the folder -> npm init -y
+Create a public folder
+    Inside public 
+        - css -> app.css
+        - js -> app.js
+        - img
+Create a app folder
+     Inside app
+        - http folder
+            - controllers folder
+            - middlewares folder
+        - models folder
+        - config folder
+Create resources folder
+    Inside resources
+        - js -> app.js
+        - scss -> app.scss
+    Note : Here we write our css,js and it is compliles and save in public css,js file and this public comiles css,js will be included in main project
+        - views
+Create a routes folder
+    Inside routes
+        - web.js
+        - api.js
+Install the required packages
+    - npm i express express-ejs-layouts ejs
+    - npm i nodemon -D  
+Create a server.js file
+    - server.js
+        const express=require('express');
+        const app=express();
+        const PORT=process.env.PORT || 3000
+        app.listen(PORT,()=>console.log(`Listening to Port ${PORT}`))
+    - package.json
+        "scripts": {
+            "serve":"node server.js",
+            "dev": "nodemon server"
+        }
+    - npm run dev
+Set the template engine to ejs and construct the path for home page view
+    - server.js
+        const expressLayout=require('express-ejs-layouts');
+        const ejs=require('ejs')
+        const path=require('path');
+        app.get('/',(req,res)=>{
+            res.render('home');
+        })
+        //set template engine
+        app.use(expressLayout)
+        app.set('views',path.join(__dirname,'/resources/views'))
+        app.set('view engine','ejs');
+    - resources/views/home.ejs
+        <h1>Hello from HomePage</h1>
+Setting Git repository
+    - git init
+    - git status
+    - git add .
+    - git commit -m "Initial"
+    - git push
+    
