@@ -13,7 +13,8 @@ app.use(expressLayout)
 app.set('views',path.join(__dirname,'/resources/views'))
 app.set('view engine','ejs');
 
-
+//Assets
+app.use(express.static('public'));
 
 const PORT=process.env.PORT || 3000
 app.listen(PORT,()=>console.log(`Listening to Port ${PORT}`))

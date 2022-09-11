@@ -57,4 +57,46 @@ Setting Git repository
     - git add .
     - git commit -m "Initial"
     - git push
-    
+Install Laravel Mix for standalone project
+    - npm i laravel-mix -D
+    - In root create a file -> webpack.mix.js
+        const mix=require('laravel-mix');
+        mix.js('resources/js/app.js','public/js/app.js').sass('resources/scss/app.scss','public/css/app.css')
+    - Now change resources/js/app.js
+        console.log("Hello from app.js")
+    - Compile the js,css using command
+        - npx mix
+    - Now we can check the compliled files under public/js/app.js
+    - Modify server.js to inform that the default folder for assets will be inside public folder
+        //Assets
+        app.use(express.static('public'));
+    - Modify resources/views/home.ejs and include the compliled css,js 
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <link rel="stylesheet" href="css/app.css">
+            <title>Realtime Pizza Tracker</title>
+        </head>
+        <body>
+            <h1>Hello from HomePage</h1>
+            <script src="js/app.js"></script>
+        </body>
+        </html>
+    - Include the talwind css cdn to use it.
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+-------------------------------------------------------
+ Include a partial file _variables.scss to include all the common variables we will use within our project
+    - _variables.scss
+        //colors
+        $primary:#FE5F1E;
+        $primary-hover:#b23301;
+        $secondary:#F8F8F8;
+        $pure:#FFF;
+        $dark:#232323;
+        $gray:#ccc;
+    - app.scss
+        @import './variables';
+
