@@ -7,9 +7,20 @@ Create Home Page using Html and Css(include talwind css)
 Create Cart Page
     - Order summary section
     - empty cart section
+    - move routes to routes files
+    - Create dedicated controllers
+Add to cart functionality
+    - connect to mongo db
+    - use connect-mongo for session store
+    - dependencies - mongoose, express-session, connect-mongo, dotenv
+        - axios to send ajax request
+        - install notifications library - npm i notify https:ned.im/noty/#/
 Create Order controller and link it in server.js
 Create Orders view with table for customer and admin
 Create Order single page with status
 Create login page with route
+Create register page with routes
+Build register crud
+    - dependencies - express-flash express-session cookie-parser dotenv
 
 
