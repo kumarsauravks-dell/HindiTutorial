@@ -99,4 +99,476 @@ Install Laravel Mix for standalone project
         $gray:#ccc;
     - app.scss
         @import './variables';
+Design Four ejs files for view inside views folder
+    - auth folder
+        - login.ejs
+        - register.ejs
+    - customers 
+        - cart.ejs
+    - layout.ejs -> to seperate the common part like navbar and footer
+======================================================
+Move routes to seperate files
+    - routes/web.js
+        function initRoutes(app){
+            app.get('/',(req,res)=>{
+                res.render('home');
+            })
+            app.get('/cart',(req,res)=>{
+                res.render('customers/cart')
+            })
+            app.get('/login',(req,res)=>{
+                res.render('auth/login')
+            })
+            app.get('/register',(req,res)=>{
+                res.render('auth/register')
+            })
+        }
+        module.exports=initRoutes
+    - server.js
+        require('./routes/web')(app);
+Create seperate controllers
+    - Factory function - function that returns an object
+    - app/http/controllers/homeController.js
+        function homeController(){
+            return{
+                index(req,res){
+                    res.render('home');
+                }
+            }
+        }
+        module.exports=homeController
+    - Modify routes/web.js
+        const homeController=require('../app/http/controllers/homeControllers')
+        app.get('/',homeController().index)
+    - app/http/controllers/authController.js
+        function authController(){
+            return {
+                login(req,res){
+                    res.render('auth/login')
+                },
+                register:(req,res)=>{
+                    res.render('auth/register')
+                }
+            }
+        }
+        module.exports=authController
+    - Modify routes/web.js
+        const authController=require('../app/http/controllers/authController')
+        app.get('/login',authController().login)
+        app.get('/register',authController().register)
+    - Similarly we can add route for cart in app/http/controllers/customers/cartController.js
+-------------------------------------------------------------------------------------
+Fetch the list of products from database(mongodb)
+    - Open Compass
+    - Connect -> Database -> Create database 
+        Database name -> pizza
+        Collection Name -> menus
+        Select file -> menus.json -> Import -> Done
+    - Install mongoose
+        - npm i mongoose
+    - Create connection to Database
+    - Update server.js
+        //Db Connection
+        const url='mongodb://localhost/pizza';
+        mongoose.connect(url,{useNewUrlParser:true,useUnifiedTopology:true});
+        const db=mongoose.connection;
+        db.on('error',console.error.bind(console,'connection error'));
+        db.once('open',()=>{
+            console.log('DB Connected...!');
+        });
+    - To fetch the stored data we first need to create model
+        const mongoose=require('mongoose');
+        const Schema=mongoose.Schema
+        //Schema S is capital means it is not a normal function , it is either class or constructor function
+        //To invoke a class/constructor function we have to use new keyword
+        const menuSchema=new Schema({
+            name:{type:String,required:true},
+            image:{type:String,required:true},
+            price:{type:Number,required:true},
+            size:{type:String,required:true}
+        })
+        module.exports=mongoose.model('Menu',menuSchema)
+        //model name(Menu) must be singular and start with a capital letter. By seeing this Menu mongodb will create a collection name menus(plural)
+    - To fetch the list of menus now we need to modify home controller.
+        - app/http/controllers/homeController.js
+            const Menu=require('../../models/menu')
+            function homeController(){
+                return{
+                    async index(req,res){
+                        const pizzas=await Menu.find()
+                        console.log(pizzas)
+                        return res.render('home',{pizzas:pizzas});
+                    }
+                }
+            }
+            module.exports=homeController
+    - Accordingly bind the pizzas data to resources/views/home.ejs
+        <% pizzas.forEach((pizza)=>{ %>
+============================================================
+Where to store the cart and how to store the cart?
+    - can be stored in local storage,cookies,database , session
+    - we will store our cart in session
+    - Install express-session and dotenv
+        - npm i express-session
+        - npm i dotenv
+    - Create a .env file in root folder
+        COOKIE_SECRET=thisismysecret
+    - Theory : 1st HttpRequest send krne pe server ek unique id(session) generate kr dega us particular user k liye
+        session id is a key value pair where the value is unique for every client.
+        Server pe session id kaha pe store kre?
+             - Server Ram - No as it is removed when server restarts. Also it is very expensive.
+             - file
+             - Redis(In memory storage)
+             - Database (We will use here)
+        Server response header me session id bhejega aur client ko session k cookie me store krne ko khega.Aur next time jab bhi client request bhejega cookie ko har request header k sath send kro.
+        Server is tarah pta kr skta hai hai ki session id kya hai aur valid hai.
+    - Install express-flash
+        npm i express-flash
+    - To check server send 1st request to client to set cookie - go to nework tab and open Request Header
+        For the second time it is already stored in Request Header - Just need to refresh.
+    - Install connect-mongo to store the cookie/session-id inside database. 
+        npm i connect-mongo
+    - Update server.js
+        require('dotenv').config();
+        const session=require('express-session');
+        const flash=require('express-flash');
+        const MongoDbStore=require('connect-mongo')
+        const mongoose=require('mongoose');
+        //Db Connection
+        const url='mongodb://localhost/pizza';
+        mongoose.connect(url,{useNewUrlParser:true,useUnifiedTopology:true});
+        const connection=mongoose.connection;
+        connection.on('error',console.error.bind(console,'connection error'));
+        connection.once('open',()=>{
+            console.log('DB Connected...!');
+        });
+        //session Store
+        let mongoStore=new MongoDbStore({
+            mongoUrl:url,
+            mongooseConnection:connection,
+            collection:'sessions'
+        })
+        // Session Config
+        app.use(session({
+            secret: process.env.COOKIE_SECRET,
+            resave:false,
+            store:mongoStore,
+            saveUninitialized:false,
+            cookie:{maxAge:1000*60*60*24} //24 hours
+        }))
+        app.use(flash());
+        app.use(express.json());
+----------------------------------------
+Now we can store the cart in the session
+    - Add an attribute to the add-to-cart button in home.ejs
+        <button data-pizza="<%= JSON.stringify(pizza) %>"
+    - Install axios package
+        npm i axios
+    - resources/js/app.js
+        import axios from 'axios';
+        let addToCart=document.querySelectorAll('.add-to-cart');
+
+        addToCart.forEach(btn=>{
+            btn.addEventListener('click',(e)=>{
+                let pizza=JSON.parse(btn.dataset.pizza)
+                //console.log(pizza)
+                updateCart(pizza);
+            })
+        })
+
+        function updateCart(pizza){
+            axios.post('/update-cart',pizza).then(res=>{
+                //console.log(res);
+            })
+        }
+    - Update routes/web.js
+        app.post('/update-cart',cartController().update)
+    - Update app/http/controllers/customers/cartController
+        update(req,res){
+            // object we want to store
+            // let cart={
+            //     items:{
+            //         pizzaId:{item:pizzaObject,qty:0}
+            //     },
+            //     totalQty:0,
+            //     totalPrice:0
+            // }
+            //check if the first request arrives
+            if(!req.session.cart){
+                req.session.cart={
+                    items:{},
+                    totalQty:0,
+                    totalPrice:0
+                }
+            }
+            let cart=req.session.cart
+            //check item doesnot exist in cart
+            if(!cart.items[req.body._id]){
+                cart.items[req.body._id]={
+                    item:req.body,
+                    qty:1
+                }
+                cart.totalQty=cart.totalQty+1
+                cart.totalPrice=cart.totalPrice+req.body.price
+            }else{
+                cart.items[req.body._id].qty+=1
+                cart.totalQty+=1
+                cart.totalPrice+=req.body.price
+
+            }
+            return res.json({totalQty:req.session.cart.totalQty})
+        }
+    - Design the cartCounter at layout page to display the count
+    - Create a global middleware to make the session variable global
+        - server.js
+        //Global middleware
+        app.use((req,res,next)=>{
+            res.locals.session=req.session
+            next();
+        })
+    - Update the layout.ejs
+        <span id="cartCounter" class="text-white font-bold pr-2"><%= session.cart.totalQty %></span>
+    - Finally update the resources/js/app.js
+        let cartCounter=document.querySelector('#cartCounter')
+        function updateCart(pizza){
+            axios.post('/update-cart',pizza).then(res=>{
+                cartCounter.innerText=res.data.totalQty
+            })
+        }
+----------------------------------------------
+Register Crud
+    Create a post request for '/register' route
+    - update routes/web.js
+        app.post('/register',authController().postRegister)
+    - To register a user we need the info provided by user in browser
+        for this we need to modify the register.ejs file to take the input provided by the user.
+        -  <form action="/register" method="POST"
+        - <input name="name"
+        - <input name="email"
+        - <input name="password"
+        - <input type='submit' 
+    - update server.js to receieve json data we posted though form submit
+        app.use(express.urlencoded({extended:false}))
+    - In authController.js console log the input from user
+        postRegister:(req,res)=>{
+            console.log(req.body)
+            }
+-----------------------------------------
+Store the register data in database 
+    - Create a schema for user - app/models/user.js
+        const mongoose=require('mongoose');
+        const Schema=mongoose.Schema;
+
+        const userScema=new Schema({
+            name:{type:String,required:true},
+            email:{type:String,required:true,unique:true},
+            password:{type:String,required:true},
+            role:{type:String,default:'customer'}
+        },{timestamps:true})
+
+        module.exports=mongoose.model('User',userScema)
+
+    - Update authController.js
+        async postRegister(req,res){
+            const {name,email,password}=req.body;
+            //validate
+            if(!name || !email || !password){
+                req.flash('error','All fields are required.')
+                req.flash('name',name)
+                req.flash('email',email)
+                return res.redirect('/register');
+            }
+            //check if email already exist
+            User.exists({email:email},(err,result)=>{
+                if(result){
+                    req.flash('error','Email Already taken.')
+                    req.flash('name',name)
+                    req.flash('email',email)
+                    return res.redirect('/register');
+                }
+            })
+            //hash password
+            const hashPassword=await bcrypt.hash(password,10)
+            //create a user
+            const user=new User({
+                name,email,
+                password:hashPassword
+            })
+            user.save().then((user)=>{
+                //login
+                return res.redirect('/')
+            }).catch(err=>{
+                req.flash('error','Something went wrong')
+                return res.redirect('/register')
+            })
+        }
+    - Update the Register.ejs
+        <form action="/register" method="POST" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+          <div class="mb-4">
+            <% if(messages.error) { %>
+            <span class="text-red-500 text-sm"><%= messages.error %></span>
+            <% } %>
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="username">
+              Name
+            </label>
+            <input name="name" value="<%= messages.name%>" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="username" type="text" placeholder="Enter username">
+          </div>
+          <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="email">
+              Email
+            </label>
+            <input name="email" value="<%= messages.email%>" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="email" type="email" placeholder="Enter your email">
+          </div>
+          <div class="mb-6">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="password">
+              Password
+            </label>
+            <input name="password" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" id="password" type="password" placeholder="******************">
+            <!-- <p class="text-red-500 text-xs italic">Please choose a password.</p>  -->
+          </div>
+          <div class="flex items-center justify-between">
+            <button class="btn-primary rounded-full text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+              Sign Up
+            </button>
+            <a class="inline-block align-baseline font-bold text-sm " href="/login">
+              Already have account?
+            </a>
+          </div>
+        </form>
+-------------------------------------
+User Login 
+    - Install package passport -> alag alag strategies se login kr skte hain jaise google,facebook etc. We will use local
+        - npm i passport passport-local
+    - Import it in server.js
+        const passport=require('passport')
+        //Passport config
+        const passportInit=require('./app/config/passport')
+        passportInit(passport);
+        app.use(passport.initialize())
+        app.use(passport.session())
+    - Create a file app/config/passport.js
+        const LocalStrategy=require('passport-local').Strategy
+        const User=require('../models/user');
+        const bcrypt=require('bcrypt')
+        function init(passport){
+            passport.use(new LocalStrategy({usernameField:'email'},async (email,password,done)=>{
+                //Login
+                //check if email exists
+                const user=await User.findOne({email:email})
+                if(!user){
+                    return done(null,false,{message:'No user with this email'})
+                }
+                bcrypt.compare(password,user.password).then(match=>{
+                    if(match){
+                        return done(null,user,{message:'Logged in successfully'})
+                    }
+                    return done(null,false,{message:'Wrong username or password'})
+                }).catch(err=>{
+                    return done(null,false,{message:'Something went wrong'})
+                })
+            }))
+            
+            passport.serializeUser((user,done)=>{
+                done(null,user._id)
+            })
+            passport.deserializeUser((id,done)=>{
+                User.findById(id,(err,user)=>{
+                    done(err,user)
+                })
+            })
+        }
+        module.exports=init;
+    - Create a middleware app/http/middlewares/guest.js
+        function guest(req,res,next){
+            if(!req.isAuthenticated()){
+                return next()
+            }
+            return res.redirect('/')
+        }
+        module.exports=guest;
+    - Update the routes/web.js
+        app.get('/login',guest,authController().login)
+        app.post('/login',authController().postLogin)
+        app.get('/register',guest,authController().register)
+        app.post('/register',authController().postRegister)
+        app.post('/logout',authController().logout)
+    - Update authController.js
+        postLogin(req,res,next){
+            const {email,password}=req.body;
+            //validate
+            if(!email || !password){
+                req.flash('error','All fields are required.')
+                return res.redirect('/login');
+            }
+            passport.authenticate('local',(err,user,info)=>{
+                if(err){
+                    req.flash('error',info.message)
+                    return next(err)
+                }
+                if(!user){
+                    req.flash('error',info.message)
+                    return res.redirect('/login')
+                }
+                req.login(user,(err)=>{
+                    if(err){
+                        req.flash('error',info.message)
+                        return next(err)
+                    }
+                    return res.redirect('/')
+                })
+            })(req,res,next)
+        },
+        logout(req,res){
+            req.logout(()=>{
+                return res.redirect('/login');
+            })            
+        }
+    - Update server.js
+        //Global middleware
+        app.use((req,res,next)=>{
+            res.locals.session=req.session
+            res.locals.user=req.user
+            next();
+        })
+    - Update the layout.ejs
+        <% if(user) { %>
+            <li class="ml-6">
+                <form id="logout" action="/logout" method="POST">
+                    <a onclick="document.getElementById('logout').submit()" href="#">Logout</a>
+                </form>                        
+            </li>
+        <% } else { %>
+        <li class="ml-6"><a href="/register">Register</a></li>
+        <li class="ml-6"><a href="/login">Login</a></li>
+        <% } %>
+    - Update the login.ejs
+        <form action="/login" method="POST" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+        <div class="mb-4">
+            <% if(messages.error) { %>
+            <span class="text-red-500 text-sm"><%= messages.error %></span>
+            <% } %>
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="email">
+            Email
+            </label>
+            <input name="email" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="email" type="email" placeholder="Enter your email">
+        </div>
+        <div class="mb-6">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="password">
+            Password
+            </label>
+            <input name="password" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" id="password" type="password" placeholder="******************">
+        </div>
+        <div class="flex items-center justify-between">
+            <button class="btn-primary rounded-full text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+            Log In
+            </button>
+            <a class="inline-block align-baseline font-bold text-sm " href="/register">
+            Don't have account?
+            </a>
+        </div>
+        </form>
+-------------------------------------------------
+
+
+
 
