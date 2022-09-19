@@ -36,14 +36,17 @@ app.use(session({
     cookie:{maxAge:1000*60*60*24} //24 hours
 }))
 
-app.use(flash());
-app.use(express.json());
-app.use(express.urlencoded({extended:false}))
 //Passport config
 const passportInit=require('./app/config/passport')
 passportInit(passport);
 app.use(passport.initialize())
 app.use(passport.session())
+
+app.use(flash());
+//Assets
+app.use(express.static('public'));
+app.use(express.urlencoded({extended:false}))
+app.use(express.json());
 
 //Global middleware
 app.use((req,res,next)=>{
@@ -57,9 +60,6 @@ app.set('views',path.join(__dirname,'/resources/views'))
 app.set('view engine','ejs');
 
 require('./routes/web')(app);
-
-//Assets
-app.use(express.static('public'));
 
 const PORT=process.env.PORT || 3000
 app.listen(PORT,()=>console.log(`Listening to Port ${PORT}`))
