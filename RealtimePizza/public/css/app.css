@@ -183,3 +183,11 @@ section.status {
 .status-box ul li small {
   float: right;
 }
+
+@media (max-width: 1024px) {
+  .table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
