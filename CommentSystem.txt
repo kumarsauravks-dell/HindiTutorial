@@ -25,3 +25,273 @@ Steps
             app.listen(PORT,()=>console.log(`Listening to port ${PORT}`))
     - Start the server 
         - npm run dev
+---------------------------------------------------------------------
+Create a html teplate 
+    - index.html
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Comment System</title>
+            <link rel="stylesheet" href="/css/bootstrap.min.css">
+            <link rel="stylesheet" href="/css/style.css">
+        </head>
+        <body>
+            <div class="container mt-4 px-4 py-2">
+                <div class="row">
+                    <div class="col-md-12">
+                        <h4><strong>Realtime comment system using Node.js, Express.js, MongoDb, Socket.io and vanilla JavaScript.</strong></h4>
+                        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Est ipsam quam voluptatum cupiditate? Repellat atque nulla veniam error, quibusdam, dolorem debitis fuga delectus fugit nesciunt nam! Nemo labore minima ut.</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <h4 class="py-2">Comments</h4>
+                        <div class="form-group">
+                            <label class="py-1" for="comment">Write a comment</label>
+                            <textarea class="form-control" id="comment" rows="3"></textarea>
+                        </div>                
+                    </div>
+                    <div class="col-md-12">
+                        <button id="comment-btn" class="btn btn-primary float-end my-3">Comment</button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <ul class="comment_box">
+                            <li class="comment">
+                                <div class="card border-light mb-3">
+                                    <div class="card-body">
+                                        <h6 class="fw-bold">John Doe</h6>
+                                        <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Placeat rerum doloremque in quae odio ut similique, aliquid harum. Laboriosam accusantium soluta repellat deserunt optio vero quaerat expedita et, nisi dicta?</p>
+                                        <div>
+                                            <img width="12" src="/img/clock.png" alt="clock">
+                                            <small>11:30 PM</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <script src="/socket.io/socket.io.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+            <script src="/js/app.js"></script>
+        </body>
+        </html>
+Steps to Post comment
+    1. Append the Comment to Dom
+    2. Broadcast Comment to all users
+    3. Sync with MongoDb
+
+    - Append the Comment to Dom
+        - In app.js , Prompt the user to add his name and appent the comment to dom
+            let username;
+            do
+            {
+                username=prompt("Enter your name?")
+            }while(!username)
+
+            const textarea=document.querySelector('#comment')
+            const commentBtn=document.querySelector('#comment-btn');
+            const commentBox= document.querySelector('.comment_box');
+
+            commentBtn.addEventListener('click',(e)=>{
+                e.preventDefault();
+                const comment=textarea.value
+                postComment(comment);
+            });
+
+            function postComment(comment){
+                //Append to DOM
+                let data={
+                    username: username,
+                    comment:comment
+                }
+                appendToDom(data)
+                textarea.value='';
+            }
+
+            function appendToDom(data){
+                let liTag=document.createElement('li');
+                liTag.classList.add('comment','mb-3')
+                let markup=`
+                <div class="card border-light mb-3">
+                    <div class="card-body">
+                        <h6 class="fw-bold">${data.username}</h6>
+                        <p>${data.comment}</p>
+                        <div>
+                            <img width="12" src="/img/clock.png" alt="clock">
+                            <small>${moment(data.time).format('LT')}</small>
+                        </div>
+                    </div>
+                </div>
+                `
+                liTag.innerHTML=markup
+                commentBox.prepend(liTag)
+            }
+    - Broadcast Comment to all users
+        - Install socket.io
+            - npm i socket.io
+        - Include the cdn of moment and socket.io in the index.html 
+            <script src="/socket.io/socket.io.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+        - Modify server.js
+            const server=app.listen(PORT,()=>console.log(`Listening to port ${PORT}`))
+            let io=require('socket.io')(server)
+            io.on('connection',(socket)=>{
+                //console.log(`New connection: ${socket.id}`)
+                //Receive event
+                socket.on('comment',(data)=>{
+                    //console.log(data)
+                    data.time=Date()
+                    socket.broadcast.emit('comment',data)
+                })
+            })
+        - Modify app.js to bradcast the comment to all users
+            let socket=io()
+            function postComment(comment){
+                ......
+                //Broadcast
+                broadcastComment(data)
+            }
+            function broadcastComment(data){
+                //Socket
+                //Emit event
+                socket.emit('comment',data)
+            }
+
+            socket.on('comment',data=>{
+                appendToDom(data);
+            })
+    - Note : Here , first we are emitting an event and data from app.js for a new comment to server
+        Server recieves the event and data, modifies the data by adding time and broadcast it to all users.
+        app.js recieves the broadcast message send by the server and append that data to the dom.
+------------------------------------------------------------------------
+Adding Slow animation to comment
+    - style.css
+        .comment{
+            animation: slowTransition 0.6s ease;
+        }
+        @keyframes slowTransition{
+            0%{
+                transform: translateY(-30px);
+                opacity: 0;
+            }
+            100%{
+                transform: translateY(0px);
+                opacity: 1;
+            }
+        }
+Adding a typing message when a user is typing
+    - index.html
+        <div class="typing text-success"></div>
+    - Modify app.js to emit an event when user is typing
+        //Event listner on textarea when a user is typing
+        textarea.addEventListener('keyup',(e)=>{
+            socket.emit('typing',{username})
+        })
+    - Modify server.js to recieve the event from app.js
+        io.on('connection',(socket)=>{
+            ............
+            socket.on('typing',(data)=>{
+                socket.broadcast.emit('typing',data)
+            })
+        })
+    - Modify app.js to recieve the broadcast message and display it to all user
+        let typingDiv=document.querySelector('.typing');
+        socket.on('typing',(data)=>{
+            typingDiv.innerText=`${data.username} is typing....`
+            debounce(function(){
+                typingDiv.innerText=''
+            },1000)
+        })
+
+        let timerId=null;
+        function debounce(func,timer){
+            if(timerId){
+                clearTimeout(timerId)
+            }
+            timerId=setTimeout(()=>{
+                func();
+            },timer)
+        }
+---------------------------------------
+Save comments to MongoDb
+    - Install mongoose
+        - npm i mongoose
+    - Modify server.js and create connection to MongoDb 
+        - //Db Connection
+        const mongoose=require('mongoose');
+        const url='mongodb://localhost/comments'
+        mongoose.connect(url,{
+            //userNewUrlParser: true,
+            useUnifiedTopology:true,
+            //useFindAndModify:true
+        })
+        const connection=mongoose.connection;
+        connection.once('open',()=>{
+            console.log('Db Connected')
+        })
+    - Create a file for schema models/comment.js
+        const mongoose=require('mongoose');
+        const Schema=mongoose.Schema;
+        const commentSchema=new Schema({
+            username:{type:String,required:true},
+            comment:{type:String,required:true}
+        },{timestamps:true})
+
+        const Comment=mongoose.model('Comment',commentSchema)
+        module.exports=Comment;
+    - Create a route to post the comment to Database
+        app.use(express.json())
+        //Routes
+        app.post('/api/comments',(req,res)=>{
+            const comment=Comment({
+                username:req.body.username,
+                comment:req.body.comment
+            })
+            comment.save().then(response=>{
+                res.send(response);
+            })
+        })
+    - Send a post request from app.js
+        function postComment(comment){
+            ......
+            //Sync with mongodb
+            syncWithDb(data)
+        }
+        //Api Calls
+        function syncWithDb(data){
+            const headers={
+                'Content-Type':'application/json'
+            }
+            fetch('/api/comments',{method:'Post',body:JSON.stringify(data),headers})
+            .then(response=>response.json())
+            .then(result=>{
+                console.log(result)
+            })
+        }  
+    - Create a route to fetch the comments from Database in server.js
+        app.get('/api/comments',(req,res)=>{
+            Comment.find().then((comments)=>{
+                res.send(comments)
+            })
+        })
+    - On page load display the database stored comment with the time they stored
+    - Update the app.js to fetch all the comments
+        function fetchComments(){
+            fetch('/api/comments')
+            .then(res=>res.json())
+            .then(result=>{
+                result.forEach((comment)=>{
+                    comment.time=comment.createdAt
+                    appendToDom(comment)
+                })
+            })
+        }
+        window.onload=fetchComments
+

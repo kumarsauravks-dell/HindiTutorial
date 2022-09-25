@@ -1,0 +1,42 @@
+TODO: 
+Create NPM project 
+    - npm init -y
+Create Index, Css, Js files
+    - public folder -> client.js, style.css
+    - index.html  
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Wassup Chat App</title>
+            <link rel="stylesheet" href="/public/style.css">
+        </head>
+        <body>
+
+            <script src="/public/client.js"></script>    
+        </body>
+        </html>
+Install dependancies. express, nodemon(dev dep.)
+    - npm i express
+    - npm i nodemon -D 
+Create a express server (server.js)
+    - server.js
+
+do frontend part
+Install socket.io, Setup socket.io in server.js and client client.js
+    - npm i socket.io
+    - index.html
+        <script src="/socket.io/socket.io.js"></script>
+    - server.js
+        // Socket 
+        const io=require('socket.io')(http)
+        io.on('connection',(socket)=>{
+            console.log("Connected")
+        })
+    - client.js
+
+Client send message logic in client.js
+Recieve message on server and broadcast to all clients
+Recieve message on client and display it. scrollToBottom etc...

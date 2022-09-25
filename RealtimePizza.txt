@@ -621,7 +621,42 @@ Create a customer orders page to display list of orders
     - install moment to format date 
         - npm i moment
     - Create a middleware app/http/middlewares/auth.js 
+.....
 
+--------------------------------------
+Implemention Socket.io so that order status changes get tracked
+    Install socket.io
+        - npm i socket.io
+    Modify layout.ejs
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="/js/app.js"></script>
+    Modify app.js
+        //socket
+        let socket=io();
+        //join
+        if(order){
+            socket.emit('join',`order_${order._id}`)
+        }
+    Modify statusController whenever the order status changes.
+        // Emit Event
+        const eventEmitter=req.app.get('eventEmitter')
+        eventEmitter.emit('orderUpdated',{id: req.body.orderId,status:req.body.status})
+        res.redirect('/admin-orders');
+    Modify server.js
+        const Emmiter=require('events')
+        //Event Emitter
+        const eventEmitter=new Emmiter()
+        app.set('eventEmitter',eventEmitter)
+
+        //Socket
+        const io=require('socket.io')(server)
+        io.on('connection',(socket)=>{
+            //Join on room
+            //console.log(socket.id);
+            socket.on('join',(orderId)=>{
+                socket.join(orderId)
+            })
+        })
 
 
 

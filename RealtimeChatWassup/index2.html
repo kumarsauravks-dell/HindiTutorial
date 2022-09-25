@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wassup</title>
+    <link rel="stylesheet" href="/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
+</head>
+
+<body>
+    <div class="container">
+        <div class="card w-100">
+            <div class="card-header fw-bold">
+                <img height="35" src="/wassup.png" alt="">
+                Wassup
+            </div>
+            <div class="card-body">
+                <div class="msgDiv py-2 px-4 message_area">
+                    <img class="img_blank" height="100%" src="/message-bg.png" alt="">
+                    <!-- <div class="message incoming">
+                        <h6 class="fw-bold mb-1">Lily Coleman</h6>
+                        <p class="my-2">
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+                            tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+                            quis nostrud exercitation ullamco laboris nisi ut aliquip consequat.
+                        </p>
+                    </div>
+                    <div class="message outgoing">
+                        <h6 class="fw-bold mb-1">Lily Coleman</h6>
+                        <p class="my-2">
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+                        </p>
+                    </div>
+                    <div class="message incoming">
+                        <h6 class="fw-bold mb-1">Lily Coleman</h6>
+                        <p class="my-2">
+                            Lorem ipsum dolor sit amet
+                        </p>
+                    </div> -->
+                </div>
+                <div class="enterMsgDiv p-4 mb-4">
+                    <div class="d-flex flex-start w-100">
+                        <div class="form-outline w-100">
+                            <textarea class="form-control" id="textarea" rows="4"
+                                placeholder="Enter your message and press Enter"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="/client.js"></script>
+</body>
+
+</html>

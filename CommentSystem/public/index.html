@@ -25,13 +25,14 @@
                 </div>                
             </div>
             <div class="col-md-12">
-                <button class="btn btn-primary float-end my-3">Comment</button>
+                <button id="comment-btn" class="btn btn-primary float-end my-3">Comment</button>
             </div>
         </div>
         <div class="row">
             <div class="col-md-12">
+                <div class="typing text-success"></div>
                 <ul class="comment_box">
-                    <li class="comment">
+                    <!-- <li class="comment">
                         <div class="card border-light mb-3">
                             <div class="card-body">
                                 <h6 class="fw-bold">John Doe</h6>
@@ -42,23 +43,13 @@
                                 </div>
                             </div>
                         </div>
-                    </li>
-                    <li class="comment">
-                        <div class="card border-light mb-3">
-                            <div class="card-body">
-                                <h6 class="fw-bold">John Doe</h6>
-                                <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Placeat rerum doloremque in quae odio ut similique, aliquid harum. Laboriosam accusantium soluta repellat deserunt optio vero quaerat expedita et, nisi dicta?</p>
-                                <div>
-                                    <img width="12" src="/img/clock.png" alt="clock">
-                                    <small>11:30 PM</small>
-                                </div>
-                            </div>
-                        </div>
-                    </li>
+                    </li> -->
                 </ul>
             </div>
         </div>
     </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
     <script src="/js/app.js"></script>
 </body>
 </html>

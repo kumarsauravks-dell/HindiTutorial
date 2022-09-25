@@ -87,7 +87,7 @@ function initAdmin(){
                 <td class="border px-4 py-2">${ order.address }</td>
                 <td class="border px-4 py-2">
                     <div class="inline-block relative w-64">
-                        <form action="/admin/order/status" method="POST">
+                        <form action="/admin-order-status" method="POST">
                             <input type="hidden" name="orderId" value="${ order._id }">
                             <select name="status" onchange="this.form.submit()"
                                 class="block appearance-none w-full bg-white border border-gray-400 hover:border-gray-500 px-4 py-2 pr-8 rounded shadow leading-tight focus:outline-none focus:shadow-outline">
@@ -126,4 +126,79 @@ function initAdmin(){
         `
         }).join('')
     }
+    let socket=io();
+    socket.on('orderPlaced',(order)=>{
+        // toast()
+        // .success('Order Updated','')
+        // .with({
+        // shape: 'square',
+        // duration: 2000,
+        // speed: 1000,
+        // positionX: 'end',
+        // positionY: 'top'
+        // }).show();
+        orders.unshift(order)
+        orderTableBody.innerHTML='';
+        orderTableBody.innerHTML=generateMarkup(orders)
+    })
 }
+
+//change order status
+let statuses=document.querySelectorAll('.status_line')
+let hiddenInput=document.querySelector('#hiddenInput')
+let order=hiddenInput?hiddenInput.value:null
+order=JSON.parse(order)
+let time=document.createElement('small');
+//console.log(order);
+
+function updateStatus(order){
+    statuses.forEach((status)=>{
+        status.classList.remove('stepCompleted')
+        status.classList.remove('current')
+    })
+    let stepCompleted=true;
+    statuses.forEach((status)=>{
+        let dataProp=status.dataset.status
+        if(stepCompleted){
+            status.classList.add('step-completed')
+        }
+        if(dataProp===order.status){
+            stepCompleted=false;
+            time.innerText=moment(order.updatedAt).format('hh:mm A')
+            status.appendChild(time)
+            if(status.nextElementSibling){
+                status.nextElementSibling.classList.add('current');
+            }
+        }
+    })
+    
+}
+
+updateStatus(order);
+
+//socket
+let socket=io();
+//join
+if(order){
+    socket.emit('join',`order_${order._id}`)
+}
+let adminAreaPath=window.location.pathname
+if(adminAreaPath.includes('admin')){
+    socket.emit('join','adminRoom')
+}
+
+socket.on('orderUpdated',(data)=>{
+    const updatedOrder={...order}
+    updatedOrder.updatedAt=moment().format()
+    updatedOrder.status=data.status
+    updateStatus(updatedOrder)
+    toast()
+        .success('Order Updated','')
+        .with({
+        shape: 'square',
+        duration: 2000,
+        speed: 1000,
+        positionX: 'end',
+        positionY: 'top'
+        }).show()
+})
