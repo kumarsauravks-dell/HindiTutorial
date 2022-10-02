@@ -1,0 +1,102 @@
+History
+    - Brendan Eich -> created -> Mocha -> LiveScript -> JavaScript
+    - Microsoft at first dont agree to go with JavaScript but finally go with th flow and follow ECMAScript standard for all browsers.
+    - Jquery was used as for all browser different JavaScript not work the same .
+    - browser v8 Engine + c++ -> Node
+    - ES6 -> 2015
+    - TC39 -> Comitee to disuss the new specification for JavaScript
+Use of JavaScript
+    - Frontend - React , Angular , Vue
+    - Backend - Node
+    - Mobile App Development - React Native
+    - Desktop App Development - Electron
+    - PWA
+    - Game Development
+    - ML
+    - Browser Extentions
+
+Object 
+    - const laptop={ model:'xxx',color:'white'}
+    - console.log(laptop);
+    - console.log(laptop.color);
+Variables
+    - var,let,const
+    - let 
+        - Wrong declaration
+            - let 3name='Saurav' 
+            - lrt user-name ='Saurav'
+        - Can use underscore(_) or camelCase
+    - const 
+        - value must be provided while declaration and cant be modified further.
+    - Scope
+        - var -> function Scope
+        - let -> block Scope {}
+        - const -> block Scope
+    - Hoisting
+        - console.log(greeting);
+            var greeting="Hello";
+            // greeting is undefined
+        - console.log(greeting);
+            let greeting="Hello";
+            // greeting is initialised before it is declared.
+        - let k sath Hoisting kaam krti hai but isme code Temporal dead zone(TDZ) k andar hota hai.
+DataTypes
+    - JavaScript is a dynamic type language , no strict typing is there.
+    - Prmitive DataType
+        - Number -> 25,-25,50.50
+        - String -> 'Saurav'
+        - Boolean -> true , false
+        - undefined -> Variable declared hai but value assign nhi hui hai.
+        - BigInt
+            - Why we need it , we have already Number?
+                - Number.MAX_SAFE_INTEGER -> 9007199254740991 -> i.e 2**53-1
+                - To store big number we use BigInt
+        - Symbol
+    - Structural type
+        - Object
+            - function -> non data structure, callable
+            - Arrays -> collection of values
+            - Maps -> key can be an Object
+            - Set 
+            - Date
+    - Structural root
+        - null
+Operators
+    1. Assignment Operator 
+        = 
+        eg: let x=10;
+            let y=20; x=y;
+            x+=y; // Compound Operator
+    2. Comparison Operator
+        == , != , === , !== , > , >= , < , <=
+        Note : The process of comparing === is known as coersion
+        Note : precidence table defines which operation will take place first .
+            eg: console.log(3 > 2 && 2 > 1) //true as > has higher precidence value than &&
+    3. Arithmetic Operator
+        +, - , * , / , **(Exponential or Power)
+        eg : 2**4 //16
+    4. Bitwise Operator
+    5. Logical Operator
+        &&  - Logical and
+            const isLoggedIn=true; const hasPermission=true;
+            if(isLoggedIn && hasPermission){ console.log('Can Access') }
+            'Cat' && 'Dog' // 'Dog'
+            Note : if lhs and rhs is boolean the it returns boolean else it returns rhs value.
+        || - Logical or
+        ! - Logical not
+            const animal='Cat';
+            console.log(!animal) // false
+            Note : Logical not with string value returns false;
+
+    6. String Operator
+    7. Conditional/Ternary Operator
+        const userRole='admin'
+        userRole==='admin'?'You are Admin':'You are not an admin';    8. Comma Operator
+    9. Unary Operator
+    10. Relational Operator
+=======================================================
+Array 
+    - Difference btw map and filter
+        - filter - based on true and false new array is returned
+        - map - returns new array with modified values provided.
+
